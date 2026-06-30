@@ -82,15 +82,26 @@ public sealed class SqliteQuranRepository : IQuranRepository
         if (norm.Length == 0) return Array.Empty<string>();
 
         using var conn = Open();
+
+        // مطابقة متدرّجة لتفادي النتائج الكاذبة: نبدأ بالأدقّ، ولا ننزل لمطابقة
+        // الاحتواء (LIKE) إلا إذا لم نجد أي تطابق تامّ. وإلا فإن كلمةً مثل «بِخَلْقِ»
+        // (الباء + خلق ⇐ المطبّع «بخلق») تطابق LIKE %بخل% فيظهر جذر «خلق» خطأً
+        // عند البحث عن «بخل».
+        // 1) المُدخل جذر تامّ.  2) شكل/ليمة كلمة تامّ.  3) احتواء (أخير، عند غياب التطابق التامّ).
+        var roots = QueryRoots(conn, "NormRoot = $n", norm);
+        if (roots.Count == 0)
+            roots = QueryRoots(conn, "NormLemma = $n OR NormForm = $n", norm);
+        if (roots.Count == 0)
+            roots = QueryRoots(conn, "NormLemma LIKE $like OR NormForm LIKE $like", norm);
+        return roots;
+    }
+
+    private static List<string> QueryRoots(SqliteConnection conn, string condition, string norm)
+    {
         using var cmd = conn.CreateCommand();
-        // الجذور المطابقة: المُدخل هو الجذر نفسه، أو ليمة الكلمة (بالرسم الإملائي)،
-        // أو شكل الكلمة كما في الرسم العثماني.
-        cmd.CommandText = """
+        cmd.CommandText = $"""
             SELECT DISTINCT Root FROM Words
-            WHERE Root <> '' AND (
-                NormRoot = $n OR
-                NormLemma = $n OR NormLemma LIKE $like OR
-                NormForm = $n OR NormForm LIKE $like)
+            WHERE Root <> '' AND ({condition})
             ORDER BY Root;
             """;
         cmd.Parameters.AddWithValue("$n", norm);
