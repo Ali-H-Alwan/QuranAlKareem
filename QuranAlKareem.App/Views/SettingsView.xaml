@@ -1,0 +1,191 @@
+<UserControl x:Class="QuranAlKareem.App.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FlowDirection="RightToLeft"
+             Background="{StaticResource Parchment}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
+        <StackPanel MaxWidth="760" HorizontalAlignment="Center">
+
+            <TextBlock Text="⚙ الإعدادات" FontSize="24" FontWeight="Bold"
+                       Foreground="{StaticResource Green}" Margin="0,0,0,16" />
+
+            <!-- خيارات البحث -->
+            <Border Style="{StaticResource CardPanel}" Margin="0,0,0,14">
+                <StackPanel>
+                    <TextBlock Text="خيارات البحث" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource Green}" Margin="0,0,0,10" />
+                    <CheckBox IsChecked="{Binding FoldLetters}" Foreground="{StaticResource Ink}">
+                        <StackPanel Margin="4,0,0,0">
+                            <TextBlock Text="توحيد الحروف المتشابهة" FontWeight="Bold" FontSize="13" />
+                            <TextBlock Text="يعامل ة=ه، أ إ آ=ا، ى=ي كحرف واحد" FontSize="11"
+                                       Foreground="{StaticResource Muted}" />
+                        </StackPanel>
+                    </CheckBox>
+                    <CheckBox IsChecked="{Binding BothRasm}" Margin="0,12,0,0" Foreground="{StaticResource Ink}">
+                        <StackPanel Margin="4,0,0,0">
+                            <TextBlock Text="البحث بالرسمين (إملائي وعثماني)" FontWeight="Bold" FontSize="13" />
+                            <TextBlock Text="عند الإيقاف: حسب المكتوب فقط (زكاة ≠ زكوة)" FontSize="11"
+                                       Foreground="{StaticResource Muted}" />
+                        </StackPanel>
+                    </CheckBox>
+                </StackPanel>
+            </Border>
+
+            <!-- النسخ والعرض والخط -->
+            <Border Style="{StaticResource CardPanel}" Margin="0,0,0,14">
+                <StackPanel>
+                    <TextBlock Text="العرض والنسخ" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource Green}" Margin="0,0,0,10" />
+
+                    <TextBlock Text="عند نسخ الآية:" FontWeight="Bold" FontSize="13" Foreground="{StaticResource Ink}" />
+                    <RadioButton GroupName="Copy" IsChecked="{Binding CopyFullInfo}" Margin="0,4,0,0"
+                                 Content="نص الآية مع معلوماتها (السورة، رقم الآية، الصفحة)"
+                                 FontSize="12" Foreground="{StaticResource Ink}" />
+                    <RadioButton GroupName="Copy"
+                                 IsChecked="{Binding CopyFullInfo, Converter={StaticResource InverseBool}}"
+                                 Content="نص الآية فقط" Margin="0,5,0,0" FontSize="12" Foreground="{StaticResource Ink}" />
+
+                    <TextBlock Text="شكل النص المنسوخ:" FontWeight="Bold" FontSize="13"
+                               Foreground="{StaticResource Ink}" Margin="0,12,0,0" />
+                    <RadioButton GroupName="Tashkil"
+                                 IsChecked="{Binding CopyWithoutTashkil, Converter={StaticResource InverseBool}}"
+                                 Content="مع الحركات (التشكيل)" Margin="0,4,0,0"
+                                 FontSize="12" Foreground="{StaticResource Ink}" />
+                    <RadioButton GroupName="Tashkil" IsChecked="{Binding CopyWithoutTashkil}"
+                                 Content="نص صريح (بدون تشكيل)" Margin="0,5,0,0"
+                                 FontSize="12" Foreground="{StaticResource Ink}" />
+
+                    <CheckBox IsChecked="{Binding MushafTwoPages}" Margin="0,14,0,0" Foreground="{StaticResource Ink}"
+                              Content="عرض المصحف صفحتين متقابلتين" FontWeight="Bold" FontSize="13" />
+
+                    <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                        <TextBlock Text="الخط:" VerticalAlignment="Center" Foreground="{StaticResource Ink}"
+                                   FontWeight="Bold" Margin="0,0,8,0" />
+                        <ComboBox Width="180" ItemsSource="{Binding Fonts}" SelectedItem="{Binding SelectedFont}" />
+                        <TextBlock Text="الحجم:" VerticalAlignment="Center" Foreground="{StaticResource Ink}"
+                                   FontWeight="Bold" Margin="16,0,8,0" />
+                        <Slider Width="160" Minimum="16" Maximum="54" Value="{Binding FontSize}"
+                                VerticalAlignment="Center" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- إدارة تحميل الصوت -->
+            <Border Style="{StaticResource CardPanel}" Margin="0,0,0,14">
+                <StackPanel>
+                    <TextBlock Text="🎧 إدارة تلاوة الصوت" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource Green}" Margin="0,0,0,10" />
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="القارئ:" VerticalAlignment="Center" FontWeight="Bold"
+                                   Foreground="{StaticResource Ink}" Margin="0,0,8,0" />
+                        <ComboBox Width="240" ItemsSource="{Binding Reciters}" SelectedItem="{Binding SelectedReciter}" />
+                    </StackPanel>
+
+                    <WrapPanel Margin="0,12,0,0">
+                        <Button Content="⬇ تحميل التلاوة كاملة (أول مرة)" Style="{StaticResource FlatButton}"
+                                Command="{Binding DownloadAllCommand}"
+                                IsEnabled="{Binding IsDownloading, Converter={StaticResource InverseBool}}"
+                                Margin="0,0,8,8" />
+                        <Button Content="■ إلغاء" Style="{StaticResource GoldButton}"
+                                Command="{Binding CancelDownloadCommand}" Margin="0,0,8,8"
+                                Visibility="{Binding IsDownloading, Converter={StaticResource BoolToVisibility}}" />
+                        <Button Content="🗑 حذف صوت هذا القارئ" Style="{StaticResource FlatButton}"
+                                Background="#9A4A3A" Command="{Binding ClearReciterCommand}" Margin="0,0,8,8" />
+                        <Button Content="🗑 حذف كل الصوت" Style="{StaticResource FlatButton}"
+                                Background="#7A3A30" Command="{Binding ClearAllCommand}" Margin="0,0,8,8" />
+                    </WrapPanel>
+
+                    <!-- شريط التقدّم -->
+                    <StackPanel Margin="0,8,0,0"
+                                Visibility="{Binding IsDownloading, Converter={StaticResource BoolToVisibility}}">
+                        <ProgressBar Height="18" Minimum="0" Maximum="100" Value="{Binding DownloadPercent}"
+                                     Foreground="{StaticResource Green}" Background="#EFE7D2" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding DownloadStatus}" Foreground="{StaticResource Green}" FontSize="13"
+                               FontWeight="Bold" Margin="0,8,0,0" TextWrapping="Wrap"
+                               Visibility="{Binding DownloadStatus, Converter={StaticResource NonEmptyToVisibility}}" />
+
+                    <TextBlock Text="حالة التحميل لكل قارئ:" Foreground="{StaticResource Muted}"
+                               FontSize="12" Margin="0,14,0,6" />
+                    <ItemsControl ItemsSource="{Binding ReciterCaches}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{StaticResource CardAlt}" CornerRadius="6" Padding="10,6" Margin="0,3"
+                                        BorderBrush="{StaticResource GoldSoft}" BorderThickness="1">
+                                    <DockPanel>
+                                        <TextBlock DockPanel.Dock="Left" Text="{Binding Summary}" FontSize="12"
+                                                   Foreground="{StaticResource Green}" FontWeight="Bold"
+                                                   VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Name}" Foreground="{StaticResource Ink}"
+                                                   FontWeight="Bold" VerticalAlignment="Center" />
+                                    </DockPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Text="ملاحظة: التحميل الكامل ~6236 ملفاً (قد يستغرق وقتاً ويحتاج إنترنت). بعد اكتماله تعمل التلاوة بدون إنترنت."
+                               Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" Margin="0,10,0,0" />
+                </StackPanel>
+            </Border>
+
+            <!-- التحديث -->
+            <Border Style="{StaticResource CardPanel}" Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Text="🔄 تحديث النظام" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource Green}" Margin="0,0,0,10" />
+                    <DockPanel>
+                        <Button DockPanel.Dock="Left" Content="فحص التحديثات الآن" Style="{StaticResource FlatButton}"
+                                Command="{Binding CheckUpdateCommand}" />
+                        <TextBlock VerticalAlignment="Center" Margin="12,0,0,0" Foreground="{StaticResource Muted}"
+                                   FontSize="12">
+                            <Run Text="الإصدار الحالي:" />
+                            <Run Text="{Binding AppVersion, Mode=OneWay}" FontWeight="Bold"
+                                 Foreground="{StaticResource Green}" />
+                        </TextBlock>
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- حول البرنامج -->
+            <Border Style="{StaticResource CardPanel}" Margin="0,0,0,14">
+                <StackPanel>
+                    <TextBlock Text="ℹ معلومات البرنامج" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource Green}" Margin="0,0,0,10" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="اسم البرنامج:" FontWeight="Bold"
+                                   Foreground="{StaticResource Muted}" Margin="0,2,12,2" />
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="القرآن الكريم" Foreground="{StaticResource Ink}"
+                                   FontWeight="Bold" Margin="0,2" />
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="رقم الإصدار:" FontWeight="Bold"
+                                   Foreground="{StaticResource Muted}" Margin="0,2,12,2" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding AppVersion}"
+                                   Foreground="{StaticResource Green}" FontWeight="Bold" FontSize="15" Margin="0,2" />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="تطوير:" FontWeight="Bold"
+                                   Foreground="{StaticResource Muted}" Margin="0,2,12,2" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Developer}"
+                                   Foreground="{StaticResource Green}" FontWeight="Bold" Margin="0,2" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="تُحفظ كل الإعدادات تلقائياً." Foreground="{StaticResource Muted}"
+                       FontSize="12" HorizontalAlignment="Center" Margin="0,0,0,4" />
+            <TextBlock Text="© شركة الرائد للحلول البرمجية" Foreground="{StaticResource Muted}"
+                       FontSize="12" HorizontalAlignment="Center" Margin="0,0,0,20" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

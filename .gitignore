@@ -1,0 +1,20 @@
+# ── Build output ──
+[Bb]in/
+[Oo]bj/
+.vs/
+*.user
+*.suo
+
+# ── Publish & release artifacts (large, generated) ──
+/publish/
+/release/
+
+# ── Generated runtime database (rebuilt from Data/ on first run) ──
+quran.db
+*.db-shm
+*.db-wal
+
+# ── Misc ──
+*.pdb
+Thumbs.db
+.DS_Store

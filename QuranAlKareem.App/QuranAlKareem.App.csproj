@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\QuranAlKareem.Core\QuranAlKareem.Core.csproj" />
+    <ProjectReference Include="..\QuranAlKareem.Data\QuranAlKareem.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Autoupdater.NET.Official" Version="1.9.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="quran.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Data\quran-uthmani.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\morphology.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\quran-simple.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\tafsir-muyassar.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>quran.ico</ApplicationIcon>
+    <Version>1.0.1</Version>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
+    <FileVersion>1.0.1.0</FileVersion>
+    <Product>القرآن الكريم</Product>
+    <Company>شركة الرائد للحلول البرمجية</Company>
+    <Authors>شركة الرائد للحلول البرمجية</Authors>
+    <Copyright>© شركة الرائد للحلول البرمجية</Copyright>
+    <AssemblyTitle>القرآن الكريم</AssemblyTitle>
+  </PropertyGroup>
+
+</Project>
+

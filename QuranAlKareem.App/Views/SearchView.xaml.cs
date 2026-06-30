@@ -1,0 +1,30 @@
+using QuranAlKareem.App.ViewModels;
+using QuranAlKareem.Core.Services;
+using UserControl = System.Windows.Controls.UserControl;
+
+namespace QuranAlKareem.App.Views;
+
+/// <summary>تبويب البحث (نفس واجهة البحث السابقة).</summary>
+public partial class SearchView : UserControl
+{
+    private readonly MainViewModel _vm;
+
+    /// <summary>يُطلب فتح صفحة المصحف في تبويب جديد.</summary>
+    public event Action<int>? OpenPageRequested;
+
+    /// <summary>يُطلب فتح صفحة الإعدادات في تبويب.</summary>
+    public event Action? OpenSettingsRequested;
+
+    public SearchView(IQuranRepository repository)
+    {
+        InitializeComponent();
+        _vm = new MainViewModel(repository);
+        _vm.OpenPageRequested += page => OpenPageRequested?.Invoke(page);
+        _vm.OpenSettingsRequested += () => OpenSettingsRequested?.Invoke();
+        DataContext = _vm;
+    }
+
+    /// <summary>يمنع قائمة النتائج من التمرير التلقائي عند النقر داخل عنصر.</summary>
+    private void OnItemRequestBringIntoView(object sender, System.Windows.RequestBringIntoViewEventArgs e)
+        => e.Handled = true;
+}

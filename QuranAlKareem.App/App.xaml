@@ -1,0 +1,19 @@
+﻿<Application x:Class="QuranAlKareem.App.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:QuranAlKareem.App"
+             xmlns:conv="clr-namespace:QuranAlKareem.App.Converters"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <conv:NonEmptyToVisibilityConverter x:Key="NonEmptyToVisibility" />
+            <conv:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+            <conv:RatioToWidthConverter x:Key="RatioToWidth" />
+            <conv:InverseBoolConverter x:Key="InverseBool" />
+            <conv:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
