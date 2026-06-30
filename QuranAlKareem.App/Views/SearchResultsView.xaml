@@ -1,0 +1,107 @@
+<UserControl x:Class="QuranAlKareem.App.Views.SearchResultsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FlowDirection="RightToLeft"
+             Background="{StaticResource Parchment}">
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- ═══ الترويسة + شريط البحث ═══ -->
+        <Border Grid.Row="0" CornerRadius="14" Padding="22,16">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#0A3F2A" Offset="0" />
+                    <GradientStop Color="#13724C" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
+            <Border.Effect>
+                <DropShadowEffect Color="#5A6E5A" BlurRadius="16" ShadowDepth="0" Opacity="0.35" />
+            </Border.Effect>
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,14">
+                    <TextBlock Text="﴿" Foreground="{StaticResource Gold}" FontSize="26" VerticalAlignment="Center" />
+                    <TextBlock Text="نتائج البحث في القرآن الكريم" Foreground="White" FontSize="22"
+                               FontWeight="Bold" VerticalAlignment="Center" Margin="8,0" />
+                    <TextBlock Text="﴾" Foreground="{StaticResource Gold}" FontSize="26" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <Border Background="White" CornerRadius="10" Padding="6" MaxWidth="760" HorizontalAlignment="Center">
+                    <DockPanel>
+                        <Button DockPanel.Dock="Left" Content="🔍  بحث" Command="{Binding SearchCommand}"
+                                Style="{StaticResource GoldButton}" Padding="20,8" FontSize="15" Margin="6,0,0,0" />
+                        <CheckBox DockPanel.Dock="Right" Content="بالجذر" IsChecked="{Binding SearchByRoot}"
+                                  Foreground="{StaticResource Green}" FontWeight="Bold"
+                                  VerticalAlignment="Center" Margin="10,0" />
+                        <Grid MinWidth="260">
+                            <TextBox x:Name="SearchBox"
+                                     Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                                     BorderThickness="0" FontSize="16" Padding="10,8" MinHeight="38"
+                                     VerticalContentAlignment="Center" Background="Transparent">
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Enter" Command="{Binding SearchCommand}" />
+                                </TextBox.InputBindings>
+                            </TextBox>
+                            <TextBlock Text="اكتب كلمة البحث هنا…" Foreground="#9AA8A0" FontSize="16"
+                                       Margin="12,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </DockPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <!-- ═══ شريط الأدوات: العدّاد + الخط ═══ -->
+        <DockPanel Grid.Row="1" Margin="2,14,2,12">
+            <Border DockPanel.Dock="Right" CornerRadius="20" Background="{StaticResource Green}"
+                    Padding="16,7" VerticalAlignment="Center"
+                    Visibility="{Binding HasResults, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock VerticalAlignment="Center" FontSize="14">
+                    <Run Text="{Binding ResultCount, Mode=OneWay}" Foreground="{StaticResource Gold}"
+                         FontWeight="Bold" FontSize="17" />
+                    <Run Text="نتيجة" Foreground="White" />
+                </TextBlock>
+            </Border>
+
+            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="الخط" Foreground="{StaticResource Muted}" VerticalAlignment="Center" Margin="0,0,6,0" />
+                <ComboBox Width="150" ItemsSource="{Binding Fonts}" SelectedItem="{Binding SelectedFont}"
+                          VerticalAlignment="Center" />
+                <TextBlock Text="الحجم" Foreground="{StaticResource Muted}" VerticalAlignment="Center" Margin="14,0,6,0" />
+                <Slider Width="120" Minimum="16" Maximum="46" Value="{Binding FontSize}" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <TextBlock Text="{Binding StatusText}" Foreground="{StaticResource Green}" FontSize="13"
+                       FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center"
+                       TextTrimming="CharacterEllipsis" Margin="14,0" />
+        </DockPanel>
+
+        <!-- ═══ النتائج: صفحة واحدة قابلة للتمرير ═══ -->
+        <Border Grid.Row="2" Style="{StaticResource CardPanel}" Padding="14">
+            <ScrollViewer x:Name="ResultsScroll" VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <StackPanel x:Name="ResultsPanel" />
+            </ScrollViewer>
+        </Border>
+
+        <!-- ═══ حالة فارغة ═══ -->
+        <TextBlock Grid.Row="2" Text="✦  ابدأ بكتابة كلمة في الأعلى لعرض كل آياتها في صفحة واحدة"
+                   Foreground="{StaticResource Muted}" FontSize="15" HorizontalAlignment="Center"
+                   VerticalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"
+                   Visibility="{Binding HasResults, Converter={StaticResource InverseBoolToVisibility}}" />
+    </Grid>
+</UserControl>

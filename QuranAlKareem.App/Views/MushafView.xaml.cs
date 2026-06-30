@@ -22,16 +22,21 @@ public partial class MushafView : UserControl
     private static readonly Brush HoverBrush = new SolidColorBrush(Color.FromRgb(0xF1, 0xE6, 0xC8));
     private static readonly Brush OrnamentBrush = new SolidColorBrush(Color.FromRgb(0x0E, 0x5A, 0x3C));
     private static readonly Brush PlayingBrush = new SolidColorBrush(Color.FromRgb(0xCF, 0xE9, 0xD6));
+    private static readonly Brush TargetBrush = new SolidColorBrush(Color.FromRgb(0xFB, 0xEB, 0xB6));
 
     private readonly Dictionary<(int, int), List<TextElement>> _ayahInlines = new();
     private List<TextElement>? _highlighted;
 
+    /// <summary>الآية المطلوب تمييزها عند الفتح من نتائج البحث (إن وُجدت).</summary>
+    private readonly (int Surah, int Ayah)? _target;
+
     /// <summary>عنوان التبويب (اسم السورة).</summary>
     public string TabTitle { get; }
 
-    public MushafView(IQuranRepository repository, int startPage)
+    public MushafView(IQuranRepository repository, int startPage, (int Surah, int Ayah)? target = null)
     {
         InitializeComponent();
+        _target = target;
         _vm = new MushafViewModel(repository, startPage);
         _vm.PageChanged += OnPageChanged;
         _vm.PlayingAyahChanged += HighlightPlaying;
@@ -50,6 +55,22 @@ public partial class MushafView : UserControl
         BuildAyahs(TwoRightText, _vm.RightAyahs);
         BuildAyahs(TwoLeftText, _vm.LeftAyahs);
         AnimatePageTurn();
+        HighlightTarget();
+    }
+
+    /// <summary>يميّز الآية القادمة من نتائج البحث ويمررها إلى مجال الرؤية.</summary>
+    private void HighlightTarget()
+    {
+        if (_target is not { } t) return;
+        if (!_ayahInlines.TryGetValue((t.Surah, t.Ayah), out var list)) return;
+
+        foreach (var el in list) el.Background = TargetBrush;
+
+        // التمرير إلى الآية بعد اكتمال التخطيط.
+        if (list.Count > 0)
+            Dispatcher.BeginInvoke(
+                new Action(() => list[0].BringIntoView()),
+                System.Windows.Threading.DispatcherPriority.Loaded);
     }
 
     private void Track(Ayah ayah, TextElement element)

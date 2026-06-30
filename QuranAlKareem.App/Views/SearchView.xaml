@@ -46,13 +46,30 @@
                                 Style="{StaticResource GoldButton}" Margin="6,0,0,0" />
                         <CheckBox DockPanel.Dock="Right" Content="بالجذر" IsChecked="{Binding SearchByRoot}"
                                   Foreground="White" VerticalAlignment="Center" Margin="8,0" />
-                        <TextBox Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
-                                 Background="White" BorderThickness="0" FontSize="15" Padding="8,6"
-                                 VerticalContentAlignment="Center">
-                            <TextBox.InputBindings>
-                                <KeyBinding Key="Enter" Command="{Binding SearchCommand}" />
-                            </TextBox.InputBindings>
-                        </TextBox>
+                        <!-- حقل إدخال كلمة البحث (مع نص إرشادي يظهر عند الفراغ) -->
+                        <Grid MinWidth="220">
+                            <TextBox x:Name="SearchBox"
+                                     Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                                     Background="White" BorderThickness="0" FontSize="15" Padding="8,6"
+                                     MinHeight="34" VerticalContentAlignment="Center">
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Enter" Command="{Binding SearchCommand}" />
+                                </TextBox.InputBindings>
+                            </TextBox>
+                            <TextBlock Text="اكتب كلمة البحث…" Foreground="#9AA8A0" FontSize="15"
+                                       Margin="10,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
                     </DockPanel>
                 </Border>
 

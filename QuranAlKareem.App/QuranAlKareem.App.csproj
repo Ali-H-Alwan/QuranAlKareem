@@ -37,9 +37,9 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>quran.ico</ApplicationIcon>
-    <Version>1.0.1</Version>
-    <AssemblyVersion>1.0.1.0</AssemblyVersion>
-    <FileVersion>1.0.1.0</FileVersion>
+    <Version>1.0.3</Version>
+    <AssemblyVersion>1.0.3.0</AssemblyVersion>
+    <FileVersion>1.0.3.0</FileVersion>
     <Product>القرآن الكريم</Product>
     <Company>شركة الرائد للحلول البرمجية</Company>
     <Authors>شركة الرائد للحلول البرمجية</Authors>
@@ -48,4 +48,6 @@
   </PropertyGroup>
 
 </Project>
+
+
 
