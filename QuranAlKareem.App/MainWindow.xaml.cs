@@ -17,7 +17,7 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         var search = new SearchView(_repository);
-        search.OpenPageRequested += OpenMushafTab;
+        search.OpenPageRequested += OpenMushafTabAt;
         search.OpenSettingsRequested += OpenSettingsTab;
         AddTab("🔍 البحث", search, closable: false);
 
@@ -28,13 +28,7 @@ public partial class MainWindow : Window
 
     private TabItem? _settingsTab;
 
-    private void OpenMushafTab(int page)
-    {
-        var view = new MushafView(_repository, page);
-        AddTab(view.TabTitle, view, closable: true);
-    }
-
-    /// <summary>يفتح صفحة المصحف مع تمييز الآية القادمة من نتائج البحث.</summary>
+    /// <summary>يفتح صفحة المصحف مع تمييز الآية القادمة من البحث.</summary>
     private void OpenMushafTabAt(ViewModels.PageTarget t)
     {
         var view = new MushafView(_repository, t.Page, (t.SurahNumber, t.AyahNumber));

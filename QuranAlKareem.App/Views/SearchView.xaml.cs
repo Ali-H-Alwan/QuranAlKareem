@@ -9,8 +9,8 @@ public partial class SearchView : UserControl
 {
     private readonly MainViewModel _vm;
 
-    /// <summary>يُطلب فتح صفحة المصحف في تبويب جديد.</summary>
-    public event Action<int>? OpenPageRequested;
+    /// <summary>يُطلب فتح صفحة المصحف في تبويب جديد (مع تمييز الآية).</summary>
+    public event Action<PageTarget>? OpenPageRequested;
 
     /// <summary>يُطلب فتح صفحة الإعدادات في تبويب.</summary>
     public event Action? OpenSettingsRequested;
@@ -19,7 +19,7 @@ public partial class SearchView : UserControl
     {
         InitializeComponent();
         _vm = new MainViewModel(repository);
-        _vm.OpenPageRequested += page => OpenPageRequested?.Invoke(page);
+        _vm.OpenPageRequested += t => OpenPageRequested?.Invoke(t);
         _vm.OpenSettingsRequested += () => OpenSettingsRequested?.Invoke();
         DataContext = _vm;
     }

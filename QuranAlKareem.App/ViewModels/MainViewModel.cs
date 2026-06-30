@@ -251,14 +251,15 @@ public sealed partial class MainViewModel : ObservableObject
         AnalysisTitle = $"الإعراب — {analysis.Form}  (الجذر: {root}، الليمة: {lemma})";
     }
 
-    /// <summary>يُطلب فتح صفحة المصحف عند الآية المحدّدة.</summary>
-    public event Action<int>? OpenPageRequested;
+    /// <summary>يُطلب فتح صفحة المصحف عند الآية المحدّدة (مع تمييزها).</summary>
+    public event Action<PageTarget>? OpenPageRequested;
 
     [RelayCommand]
     private void OpenPage(AyahItem? ayah)
     {
         if (ayah is null) return;
-        OpenPageRequested?.Invoke(ayah.Page);
+        OpenPageRequested?.Invoke(
+            new PageTarget(ayah.Page, ayah.Ayah.SurahNumber, ayah.NumberInSurah));
     }
 
     [RelayCommand]
