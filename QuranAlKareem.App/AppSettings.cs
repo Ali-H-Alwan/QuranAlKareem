@@ -8,6 +8,8 @@ public sealed class AppSettings
 {
     public bool FoldLetters { get; set; } = true;
     public bool BothRasm { get; set; } = true;
+    /// <summary>تظليل الكلمة/الجزء/الجذر المطابق داخل نص الآية في النتائج.</summary>
+    public bool HighlightMatches { get; set; } = true;
     /// <summary>عند النسخ: true = نص الآية مع معلوماتها، false = نص الآية فقط.</summary>
     public bool CopyFullInfo { get; set; } = true;
     /// <summary>عند النسخ: true = نص صريح بدون تشكيل، false = مع الحركات.</summary>

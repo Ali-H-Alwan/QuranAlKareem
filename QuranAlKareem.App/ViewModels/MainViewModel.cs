@@ -14,7 +14,7 @@ public sealed partial class MainViewModel : ObservableObject
     public ObservableCollection<AyahItem> Ayahs { get; } = new();
 
     /// <summary>الخطوط المتاحة لعرض المصحف.</summary>
-    public string[] Fonts { get; } = { "Amiri Quran", "Scheherazade New", "Traditional Arabic", "Arial" };
+    public IReadOnlyList<string> Fonts { get; } = Services.FontInstaller.DisplayNames;
 
     [ObservableProperty]
     private Surah? _selectedSurah;
@@ -29,7 +29,10 @@ public sealed partial class MainViewModel : ObservableObject
     private string _searchQuery = string.Empty;
 
     [ObservableProperty]
-    private bool _searchByRoot;
+    private SearchMode _mode = SearchMode.Word;
+
+    [ObservableProperty]
+    private bool _highlightMatches = true;
 
     // ── إعدادات البحث ──
     [ObservableProperty]
@@ -105,6 +108,7 @@ public sealed partial class MainViewModel : ObservableObject
         MushafTwoPages = _settings.MushafTwoPages;
         SelectedFont = _settings.SelectedFont;
         FontSize = _settings.FontSize;
+        HighlightMatches = _settings.HighlightMatches;
         _loading = false;
 
         foreach (var surah in _repository.GetSurahs())
@@ -131,9 +135,11 @@ public sealed partial class MainViewModel : ObservableObject
         _settings.MushafTwoPages = MushafTwoPages;
         _settings.SelectedFont = SelectedFont;
         _settings.FontSize = FontSize;
+        _settings.HighlightMatches = HighlightMatches;
         _settings.Save();
     }
 
+    partial void OnHighlightMatchesChanged(bool value) => PersistSettings();
     partial void OnFoldLettersChanged(bool value) => PersistSettings();
     partial void OnBothRasmChanged(bool value) => PersistSettings();
     partial void OnCopyFullInfoChanged(bool value) => PersistSettings();
@@ -170,10 +176,12 @@ public sealed partial class MainViewModel : ObservableObject
 
         if (string.IsNullOrWhiteSpace(SearchQuery)) return;
 
+        SelectedFont = AppSettings.Load().SelectedFont; // طبّق الخط المختار من الإعدادات
+
         IReadOnlyList<Ayah> results;
         string rootsText = string.Empty;
 
-        if (SearchByRoot)
+        if (Mode == SearchMode.Root)
         {
             var roots = _repository.FindRoots(SearchQuery);
             rootsText = roots.Count > 0 ? string.Join("، ", roots) : "—";
@@ -189,10 +197,12 @@ public sealed partial class MainViewModel : ObservableObject
         }
         else
         {
-            results = _repository.SearchText(SearchQuery, Options);
+            var wholeWord = Mode == SearchMode.Word;
+            results = _repository.SearchText(SearchQuery, Options, wholeWord);
             foreach (var ayah in results)
-                Ayahs.Add(ToItem(ayah, SearchQuery.Trim()));
-            StatusText = $"نتائج البحث عن «{SearchQuery}»: {results.Count} آية";
+                Ayahs.Add(ToItem(ayah, string.Empty)); // لا شارة جذر في وضع الكلمة/الجزء
+            var kind = wholeWord ? "كلمة" : "جزء";
+            StatusText = $"بحث عن {kind} «{SearchQuery}»: {results.Count} آية";
         }
 
         BuildStats(results, rootsText);

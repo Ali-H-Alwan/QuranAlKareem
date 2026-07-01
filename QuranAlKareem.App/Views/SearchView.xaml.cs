@@ -1,3 +1,4 @@
+using QuranAlKareem.App.Services;
 using QuranAlKareem.App.ViewModels;
 using QuranAlKareem.Core.Services;
 using UserControl = System.Windows.Controls.UserControl;
@@ -22,6 +23,14 @@ public partial class SearchView : UserControl
         _vm.OpenPageRequested += t => OpenPageRequested?.Invoke(t);
         _vm.OpenSettingsRequested += () => OpenSettingsRequested?.Invoke();
         DataContext = _vm;
+
+        _ = new SearchAutoComplete(SearchBox, SuggestPopup, SuggestList,
+            () => _vm.Mode == SearchMode.Root,
+            text =>
+            {
+                _vm.SearchQuery = text;
+                if (_vm.SearchCommand.CanExecute(null)) _vm.SearchCommand.Execute(null);
+            });
     }
 
     /// <summary>يمنع قائمة النتائج من التمرير التلقائي عند النقر داخل عنصر.</summary>

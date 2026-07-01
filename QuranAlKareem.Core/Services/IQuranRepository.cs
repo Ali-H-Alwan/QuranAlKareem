@@ -8,11 +8,17 @@ public interface IQuranRepository
     IReadOnlyList<Surah> GetSurahs();
     IReadOnlyList<Ayah> GetAyahsBySurah(int surahNumber);
 
-    /// <summary>بحث نصّي مطلق عن كلمة/عبارة في جميع الآيات، وفق خيارات البحث.</summary>
-    IReadOnlyList<Ayah> SearchText(string query, SearchOptions options);
+    /// <summary>
+    /// بحث نصّي في جميع الآيات وفق خيارات البحث.
+    /// wholeWord=true يطابق الكلمة الكاملة (ضمن حدود المسافات)، وإلا احتواء (جزء من كلمة).
+    /// </summary>
+    IReadOnlyList<Ayah> SearchText(string query, SearchOptions options, bool wholeWord = false);
 
     /// <summary>بحث بجذر الكلمة: يرجع كل الآيات الحاوية لكلمة من نفس الجذر.</summary>
     IReadOnlyList<Ayah> SearchByRoot(string word);
+
+    /// <summary>الأشكال المطبّعة (NormForm) لكل الكلمات المشتقّة من جذر الكلمة — للتظليل.</summary>
+    IReadOnlyList<string> NormFormsOfRoots(string word);
 
     /// <summary>الجذور المطابقة لكلمة مُدخلة (للعرض عند البحث بالجذر).</summary>
     IReadOnlyList<string> FindRoots(string word);

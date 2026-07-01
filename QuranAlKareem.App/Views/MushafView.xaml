@@ -21,6 +21,16 @@
                             Background="#1A6B49" Foreground="White" BorderThickness="0" FontSize="16" Cursor="Hand" />
                     <Button Content="+" Command="{Binding ZoomInCommand}" Width="30" Height="28" Margin="4,0,0,0"
                             Background="#1A6B49" Foreground="White" BorderThickness="0" FontSize="16" Cursor="Hand" />
+
+                    <Border Width="1" Background="#2E7D5A" Margin="14,4" />
+                    <Button x:Name="CopySelBtn" Content="نسخ المحدَّد" Click="OnCopySelection" IsEnabled="False"
+                            Background="#C9A24B" Foreground="White" BorderThickness="0" Padding="10,5"
+                            Cursor="Hand" ToolTip="Ctrl + نقر على الكلمات لتحديد جزء من الآية ثم نسخه" />
+                    <Button x:Name="ClearSelBtn" Content="مسح التحديد" Click="OnClearSelection" IsEnabled="False"
+                            Background="#1A6B49" Foreground="White" BorderThickness="0" Padding="10,5"
+                            Margin="6,0,0,0" Cursor="Hand" />
+                    <TextBlock Text="Ctrl+نقر لتحديد" Foreground="#8FBFA6" FontSize="10"
+                               VerticalAlignment="Center" Margin="8,0,0,0" />
                 </StackPanel>
                 <TextBlock DockPanel.Dock="Right" Text="{Binding CopyNotice}" Foreground="#7DE0B0"
                            FontSize="13" VerticalAlignment="Center" Margin="0,0,12,0" />

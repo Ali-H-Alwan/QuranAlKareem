@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using QuranAlKareem.App.Services;
 using QuranAlKareem.App.ViewModels;
 using QuranAlKareem.Core.Services;
 using Brush = System.Windows.Media.Brush;
@@ -43,6 +44,14 @@ public partial class SearchResultsView : UserControl
         _vm.OpenPageRequested += t => OpenPageRequested?.Invoke(t);
         _vm.ResultsChanged += BuildResults;
         DataContext = _vm;
+
+        _ = new SearchAutoComplete(SearchBox, SuggestPopup, SuggestList,
+            () => _vm.Mode == SearchMode.Root,
+            text =>
+            {
+                _vm.SearchQuery = text;
+                if (_vm.SearchCommand.CanExecute(null)) _vm.SearchCommand.Execute(null);
+            });
     }
 
     private void BuildResults()
@@ -50,28 +59,14 @@ public partial class SearchResultsView : UserControl
         ResultsPanel.Children.Clear();
         ResultsScroll.ScrollToTop();
 
-        var font = new FontFamily(_vm.SelectedFont);
-        var hits = BuildHitSet(_vm.HighlightTerm);
+        var font = Services.FontInstaller.Resolve(AppSettings.Load().SelectedFont);
         var index = 1;
 
         foreach (var item in _vm.Results)
-            ResultsPanel.Children.Add(BuildCard(item, index++, font, hits));
+            ResultsPanel.Children.Add(BuildCard(item, index++, font));
     }
 
-    /// <summary>مجموعة الكلمات المطابقة (مُطبَّعة) لتمييزها داخل النص.</summary>
-    private static HashSet<string> BuildHitSet(string term)
-    {
-        var set = new HashSet<string>();
-        if (string.IsNullOrWhiteSpace(term)) return set;
-        foreach (var w in term.Split(' ', StringSplitOptions.RemoveEmptyEntries))
-        {
-            var n = ArabicText.Normalize(w);
-            if (n.Length > 0) set.Add(n);
-        }
-        return set;
-    }
-
-    private Border BuildCard(AyahItem item, int index, FontFamily font, HashSet<string> hits)
+    private Border BuildCard(AyahItem item, int index, FontFamily font)
     {
         var grid = new Grid();
         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -126,7 +121,7 @@ public partial class SearchResultsView : UserControl
             LineHeight = _vm.FontSize * 1.8,
             LineStackingStrategy = LineStackingStrategy.BlockLineHeight,
         };
-        FillText(text, ArabicText.NormalizeLight(item.Ayah.Text), hits);
+        FillText(text, ArabicText.NormalizeLight(item.Ayah.Text));
         text.Inlines.Add(new Run($"  ﴿{ToArabicDigits(item.NumberInSurah)}﴾")
         {
             Foreground = GreenBrush,
@@ -147,13 +142,27 @@ public partial class SearchResultsView : UserControl
         };
     }
 
-    /// <summary>يبني نص الآية مقسّماً إلى كلمات، ويظلّل ما يطابق كلمة البحث.</summary>
-    private static void FillText(TextBlock target, string text, HashSet<string> hits)
+    /// <summary>يبني نص الآية مقسّماً إلى كلمات، ويظلّل المطابق حسب وضع البحث.</summary>
+    private void FillText(TextBlock target, string text)
     {
         target.Inlines.Clear();
+        var enabled = _vm.HighlightEnabled;
+        var norm = _vm.HighlightNorm;
+
         foreach (var word in text.Split(' ', StringSplitOptions.RemoveEmptyEntries))
         {
-            var isHit = hits.Count > 0 && hits.Contains(ArabicText.Normalize(word));
+            var isHit = false;
+            if (enabled)
+            {
+                var n = ArabicText.Normalize(word);
+                if (_vm.HighlightForms.Count > 0)            // وضع الجذر
+                    isHit = _vm.HighlightForms.Contains(n);
+                else if (_vm.HighlightIsPart)               // وضع الجزء: احتواء
+                    isHit = norm.Length > 0 && n.Contains(norm, StringComparison.Ordinal);
+                else                                        // وضع الكلمة: تطابق تامّ
+                    isHit = norm.Length > 0 && n == norm;
+            }
+
             if (isHit)
             {
                 target.Inlines.Add(new Run(word + " ")

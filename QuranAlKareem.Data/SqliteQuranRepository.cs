@@ -44,7 +44,7 @@ public sealed class SqliteQuranRepository : IQuranRepository
         return ReadAyahs(cmd);
     }
 
-    public IReadOnlyList<Ayah> SearchText(string query, SearchOptions options)
+    public IReadOnlyList<Ayah> SearchText(string query, SearchOptions options, bool wholeWord = false)
     {
         if (string.IsNullOrWhiteSpace(query))
             return Array.Empty<Ayah>();
@@ -59,10 +59,14 @@ public sealed class SqliteQuranRepository : IQuranRepository
         var imlaaiCol = options.FoldLetters ? "NormText" : "LightText";
         var uthmaniCol = options.FoldLetters ? "NormUthmani" : "LightUthmani";
 
-        // البحث بالرسمين معاً، أو على المكتوب فقط (العثماني = نص المصحف المعروض).
+        // كلمة كاملة: نطابق ضمن حدود المسافات (نُحيط العمود والمُدخل بمسافة).
+        // جزء من كلمة: احتواء عادي (%norm%).
+        var pattern = wholeWord ? $"% {norm} %" : $"%{norm}%";
+        string Col(string c) => wholeWord ? $"(' ' || a.{c} || ' ')" : $"a.{c}";
+
         var where = options.BothRasm
-            ? $"a.{imlaaiCol} LIKE $q OR a.{uthmaniCol} LIKE $q"
-            : $"a.{uthmaniCol} LIKE $q";
+            ? $"{Col(imlaaiCol)} LIKE $q OR {Col(uthmaniCol)} LIKE $q"
+            : $"{Col(uthmaniCol)} LIKE $q";
 
         using var conn = Open();
         using var cmd = conn.CreateCommand();
@@ -72,8 +76,30 @@ public sealed class SqliteQuranRepository : IQuranRepository
             WHERE {where}
             ORDER BY a.SurahNumber, a.NumberInSurah;
             """;
-        cmd.Parameters.AddWithValue("$q", $"%{norm}%");
+        cmd.Parameters.AddWithValue("$q", pattern);
         return ReadAyahs(cmd);
+    }
+
+    public IReadOnlyList<string> NormFormsOfRoots(string word)
+    {
+        var roots = FindRoots(word);
+        if (roots.Count == 0) return Array.Empty<string>();
+
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        var placeholders = string.Join(",", roots.Select((_, i) => $"$r{i}"));
+        cmd.CommandText = $"""
+            SELECT DISTINCT NormForm FROM Words
+            WHERE NormForm <> '' AND Root IN ({placeholders});
+            """;
+        for (var i = 0; i < roots.Count; i++)
+            cmd.Parameters.AddWithValue($"$r{i}", roots[i]);
+
+        var forms = new List<string>();
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+            forms.Add(reader.GetString(0));
+        return forms;
     }
 
     public IReadOnlyList<string> FindRoots(string word)

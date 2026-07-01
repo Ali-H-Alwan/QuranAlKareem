@@ -23,6 +23,10 @@ public partial class MushafView : UserControl
     private static readonly Brush OrnamentBrush = new SolidColorBrush(Color.FromRgb(0x0E, 0x5A, 0x3C));
     private static readonly Brush PlayingBrush = new SolidColorBrush(Color.FromRgb(0xCF, 0xE9, 0xD6));
     private static readonly Brush TargetBrush = new SolidColorBrush(Color.FromRgb(0xFB, 0xEB, 0xB6));
+    private static readonly Brush SelectBrush = new SolidColorBrush(Color.FromRgb(0x9E, 0xD2, 0xF6));
+
+    /// <summary>الكلمات المحدَّدة بـ Ctrl+نقر (لنسخ جزء من الآية).</summary>
+    private readonly HashSet<Run> _selectedWords = new();
 
     private readonly Dictionary<(int, int), List<TextElement>> _ayahInlines = new();
     private List<TextElement>? _highlighted;
@@ -51,6 +55,8 @@ public partial class MushafView : UserControl
     {
         _ayahInlines.Clear();
         _highlighted = null;
+        _selectedWords.Clear();
+        UpdateSelectionButtons();
         BuildWords(SingleText, _vm.RightAyahs);
         BuildAyahs(TwoRightText, _vm.RightAyahs);
         BuildAyahs(TwoLeftText, _vm.LeftAyahs);
@@ -71,6 +77,55 @@ public partial class MushafView : UserControl
             Dispatcher.BeginInvoke(
                 new Action(() => list[0].BringIntoView()),
                 System.Windows.Threading.DispatcherPriority.Loaded);
+    }
+
+    /// <summary>الكلمة «عاديّة» (تقبل تأثير التحويم) إن لم تكن تُتلى أو محدَّدة أو هدفاً.</summary>
+    private bool IsPlain(Run r) =>
+        !ReferenceEquals(r.Background, PlayingBrush) &&
+        !ReferenceEquals(r.Background, TargetBrush) &&
+        !_selectedWords.Contains(r);
+
+    private void ToggleWordSelection(Run run)
+    {
+        if (_selectedWords.Remove(run))
+            run.Background = null;
+        else
+        {
+            _selectedWords.Add(run);
+            run.Background = SelectBrush;
+        }
+        UpdateSelectionButtons();
+    }
+
+    private void UpdateSelectionButtons()
+    {
+        var n = _selectedWords.Count;
+        CopySelBtn.IsEnabled = n > 0;
+        ClearSelBtn.IsEnabled = n > 0;
+        CopySelBtn.Content = n > 0 ? $"نسخ المحدَّد ({n})" : "نسخ المحدَّد";
+    }
+
+    private void OnCopySelection(object sender, RoutedEventArgs e)
+    {
+        if (_selectedWords.Count == 0) return;
+        // اجمع الكلمات المحدَّدة بترتيب ظهورها في نص الصفحة.
+        var sb = new System.Text.StringBuilder();
+        foreach (var inline in SingleText.Inlines)
+            if (inline is Run r && _selectedWords.Contains(r))
+                sb.Append(r.Text);
+
+        var text = sb.ToString().Trim();
+        if (text.Length == 0) return;
+        System.Windows.Clipboard.SetText(text);
+        _vm.CopyNotice = $"تم نسخ {_selectedWords.Count} كلمة محدَّدة";
+    }
+
+    private void OnClearSelection(object sender, RoutedEventArgs e)
+    {
+        foreach (var r in _selectedWords) r.Background = null;
+        _selectedWords.Clear();
+        UpdateSelectionButtons();
+        _vm.CopyNotice = string.Empty;
     }
 
     private void Track(Ayah ayah, TextElement element)
@@ -98,7 +153,7 @@ public partial class MushafView : UserControl
     private void Prepare(TextBlock target)
     {
         target.Inlines.Clear();
-        target.FontFamily = new FontFamily(_vm.SelectedFont);
+        target.FontFamily = Services.FontInstaller.Resolve(AppSettings.Load().SelectedFont);
         target.FontSize = _vm.FontSize;
         target.LineHeight = _vm.FontSize * 1.9;
         target.LineStackingStrategy = LineStackingStrategy.BlockLineHeight;
@@ -117,13 +172,25 @@ public partial class MushafView : UserControl
 
         foreach (var ayah in ayahs)
         {
+            var ayahCaptured = ayah;
             foreach (var word in _vm.WordsOf(ayah))
             {
                 var run = new Run(word.Form + " ") { Cursor = System.Windows.Input.Cursors.Hand };
                 var captured = word;
-                run.MouseLeftButtonDown += (_, _) => _vm.ShowWordAnalysis(captured);
-                run.MouseEnter += (s, _) => { if (!ReferenceEquals(((Run)s).Background, PlayingBrush)) ((Run)s).Background = HoverBrush; };
-                run.MouseLeave += (s, _) => { if (!ReferenceEquals(((Run)s).Background, PlayingBrush)) ((Run)s).Background = null; };
+                run.MouseLeftButtonDown += (s, _) =>
+                {
+                    // Ctrl+نقر: تحديد كلمات لنسخ جزء من الآية.
+                    // نقر عادي: ينسخ الآية كاملة ويعرض إعراب الكلمة المنقورة.
+                    if ((System.Windows.Input.Keyboard.Modifiers & System.Windows.Input.ModifierKeys.Control) != 0)
+                        ToggleWordSelection((Run)s);
+                    else
+                    {
+                        _vm.ShowWordAnalysis(captured);
+                        _vm.CopyAyah(ayahCaptured);
+                    }
+                };
+                run.MouseEnter += (s, _) => { if (IsPlain((Run)s)) ((Run)s).Background = HoverBrush; };
+                run.MouseLeave += (s, _) => { if (IsPlain((Run)s)) ((Run)s).Background = null; };
                 target.Inlines.Add(run);
                 Track(ayah, run);
             }

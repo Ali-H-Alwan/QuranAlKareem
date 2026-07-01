@@ -44,8 +44,20 @@
                     <DockPanel>
                         <Button DockPanel.Dock="Left" Content="🔍 بحث" Command="{Binding SearchCommand}"
                                 Style="{StaticResource GoldButton}" Margin="6,0,0,0" />
-                        <CheckBox DockPanel.Dock="Right" Content="بالجذر" IsChecked="{Binding SearchByRoot}"
-                                  Foreground="White" VerticalAlignment="Center" Margin="8,0" />
+                        <StackPanel DockPanel.Dock="Right" VerticalAlignment="Center" Margin="8,0">
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton Content="كلمة" GroupName="ModeMain" Foreground="White" VerticalAlignment="Center"
+                                             IsChecked="{Binding Mode, Converter={StaticResource EnumBool}, ConverterParameter=Word, Mode=TwoWay}" />
+                                <RadioButton Content="جزء" GroupName="ModeMain" Foreground="White" VerticalAlignment="Center"
+                                             Margin="10,0,0,0" ToolTip="جزء من كلمة"
+                                             IsChecked="{Binding Mode, Converter={StaticResource EnumBool}, ConverterParameter=Part, Mode=TwoWay}" />
+                                <RadioButton Content="جذر" GroupName="ModeMain" Foreground="White" VerticalAlignment="Center"
+                                             Margin="10,0,0,0"
+                                             IsChecked="{Binding Mode, Converter={StaticResource EnumBool}, ConverterParameter=Root, Mode=TwoWay}" />
+                            </StackPanel>
+                            <CheckBox Content="تظليل النتائج" IsChecked="{Binding HighlightMatches}"
+                                      Foreground="#CFE6DA" Margin="0,5,0,0" />
+                        </StackPanel>
                         <!-- حقل إدخال كلمة البحث (مع نص إرشادي يظهر عند الفراغ) -->
                         <Grid MinWidth="220">
                             <TextBox x:Name="SearchBox"
@@ -69,17 +81,46 @@
                                     </Style>
                                 </TextBlock.Style>
                             </TextBlock>
+
+                            <!-- اقتراحات البحث (autocomplete) -->
+                            <Popup x:Name="SuggestPopup" PlacementTarget="{Binding ElementName=SearchBox}"
+                                   Placement="Bottom" StaysOpen="False" AllowsTransparency="True"
+                                   Width="{Binding ActualWidth, ElementName=SearchBox}">
+                                <Border Background="White" BorderBrush="{StaticResource GoldSoft}"
+                                        BorderThickness="1" CornerRadius="6" Margin="0,2,0,0">
+                                    <ListBox x:Name="SuggestList" MaxHeight="300" BorderThickness="0"
+                                             FlowDirection="RightToLeft" FontSize="15">
+                                        <ListBox.ItemContainerStyle>
+                                            <Style TargetType="ListBoxItem">
+                                                <Setter Property="Padding" Value="10,6" />
+                                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                            </Style>
+                                        </ListBox.ItemContainerStyle>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <DockPanel>
+                                                    <TextBlock DockPanel.Dock="Left" Text="{Binding Count}"
+                                                               Foreground="{StaticResource Muted}" FontSize="12"
+                                                               VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding Text}" FontWeight="Bold"
+                                                               Foreground="{StaticResource Ink}" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding Root}" Foreground="{StaticResource Green}"
+                                                               FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                                </DockPanel>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Border>
+                            </Popup>
                         </Grid>
                     </DockPanel>
                 </Border>
 
                 <!-- الخط والحجم والإعدادات -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="الخط" Foreground="#CFE6DA" VerticalAlignment="Center" Margin="0,0,6,0" />
-                    <ComboBox Width="140" ItemsSource="{Binding Fonts}" SelectedItem="{Binding SelectedFont}"
-                              VerticalAlignment="Center" />
-                    <Slider Width="90" Minimum="16" Maximum="54" Value="{Binding FontSize}"
-                            VerticalAlignment="Center" Margin="8,0,0,0" />
+                    <TextBlock Text="الحجم" Foreground="#CFE6DA" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <Slider Width="110" Minimum="16" Maximum="54" Value="{Binding FontSize}"
+                            VerticalAlignment="Center" Margin="0,0,0,0" />
 
                     <Button Content="⚙ إعدادات" Style="{StaticResource FlatButton}" Background="#1A6B49"
                             Margin="10,0,0,0" Command="{Binding ToggleSettingsCommand}" />
@@ -193,7 +234,8 @@
                                                                       RelativeSource={RelativeSource AncestorType=ListBox}}"
                                                             CommandParameter="{Binding}"
                                                             FontFamily="{Binding DataContext.SelectedFont,
-                                                                        RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                                                        RelativeSource={RelativeSource AncestorType=ListBox},
+                                                                        Converter={StaticResource FontResolver}}"
                                                             FontSize="{Binding DataContext.FontSize,
                                                                        RelativeSource={RelativeSource AncestorType=ListBox}}" />
                                                 </DataTemplate>

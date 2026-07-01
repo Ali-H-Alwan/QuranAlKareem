@@ -16,13 +16,19 @@ public sealed partial class SettingsViewModel : ObservableObject
     private bool _loading;
     private CancellationTokenSource? _downloadCts;
 
-    public string[] Fonts { get; } = { "Amiri Quran", "Scheherazade New", "Traditional Arabic", "Arial" };
+    public IReadOnlyList<string> Fonts { get; } = Services.FontInstaller.DisplayNames;
     public IReadOnlyList<Reciter> Reciters { get; } = Reciter.All;
 
     /// <summary>إجمالي عدد آيات المصحف (لحساب نسبة التحميل).</summary>
     public int TotalAyahs { get; }
 
     public ObservableCollection<ReciterCacheInfo> ReciterCaches { get; } = new();
+
+    /// <summary>خطوط القرآن المتاحة للتنزيل/التثبيت (مع معاينة).</summary>
+    public ObservableCollection<FontItemViewModel> QuranFonts { get; } = new();
+
+    /// <summary>الخطّ المختار في قائمة التنزيل/التثبيت (للمعاينة).</summary>
+    [ObservableProperty] private FontItemViewModel? _selectedQuranFont;
 
     [ObservableProperty] private bool _foldLetters = true;
     [ObservableProperty] private bool _bothRasm = true;
@@ -70,6 +76,10 @@ public sealed partial class SettingsViewModel : ObservableObject
         _loading = false;
 
         RefreshCaches();
+
+        foreach (var f in Services.FontInstaller.Catalog)
+            QuranFonts.Add(new FontItemViewModel(f));
+        SelectedQuranFont = QuranFonts.FirstOrDefault();
     }
 
     private void Persist()
@@ -168,6 +178,14 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     [RelayCommand]
     private void CheckUpdate() => AppUpdater.Instance.Check(showMessage: true);
+
+    /// <summary>يطبّق الخطّ المختار كخطّ عرض للتطبيق كله.</summary>
+    [RelayCommand]
+    private void ApplyFont()
+    {
+        if (SelectedQuranFont is null) return;
+        SelectedFont = SelectedQuranFont.Family; // يحفظ عبر OnSelectedFontChanged → Persist
+    }
 }
 
 /// <summary>حالة ذاكرة الصوت لقارئ.</summary>

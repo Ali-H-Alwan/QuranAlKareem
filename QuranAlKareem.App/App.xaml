@@ -14,6 +14,8 @@
             <conv:RatioToWidthConverter x:Key="RatioToWidth" />
             <conv:InverseBoolConverter x:Key="InverseBool" />
             <conv:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility" />
+            <conv:EnumBooleanConverter x:Key="EnumBool" />
+            <conv:FontFamilyResolverConverter x:Key="FontResolver" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

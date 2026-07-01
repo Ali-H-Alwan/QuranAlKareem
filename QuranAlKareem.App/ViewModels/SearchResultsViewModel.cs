@@ -21,13 +21,16 @@ public sealed partial class SearchResultsViewModel : ObservableObject
     public ObservableCollection<AyahItem> Results { get; } = new();
 
     /// <summary>الخطوط المتاحة لعرض نص الآيات.</summary>
-    public string[] Fonts { get; } = { "Amiri Quran", "Scheherazade New", "Traditional Arabic", "Arial" };
+    public IReadOnlyList<string> Fonts { get; } = Services.FontInstaller.DisplayNames;
 
     [ObservableProperty]
     private string _searchQuery = string.Empty;
 
     [ObservableProperty]
-    private bool _searchByRoot;
+    private SearchMode _mode = SearchMode.Word;
+
+    [ObservableProperty]
+    private bool _highlightMatches = true;
 
     [ObservableProperty]
     private string _selectedFont = "Amiri Quran";
@@ -44,9 +47,18 @@ public sealed partial class SearchResultsViewModel : ObservableObject
     [ObservableProperty]
     private bool _hasResults;
 
-    /// <summary>الكلمة التي تُظلَّل داخل نص الآية (فارغة في البحث بالجذر).</summary>
-    [ObservableProperty]
-    private string _highlightTerm = string.Empty;
+    // ── معطيات التظليل داخل نص الآية (تُحسب لحظة البحث، تُقرأ عند بناء البطاقات) ──
+    /// <summary>النص المطبّع المطلوب تظليله (للكلمة/الجزء).</summary>
+    public string HighlightNorm { get; private set; } = string.Empty;
+    /// <summary>وضع الجزء: يُظلَّل أي كلمة تحتوي النص (لا المطابقة التامّة).</summary>
+    public bool HighlightIsPart { get; private set; }
+    /// <summary>وضع الجذر: يُظلَّل أي كلمة شكلُها ضمن هذه المجموعة.</summary>
+    public HashSet<string> HighlightForms { get; private set; } = new();
+    private bool _highlightByForms;
+
+    /// <summary>هل التظليل مفعّل ويوجد ما يُظلَّل؟ (يُقرأ عند إعادة البناء).</summary>
+    public bool HighlightEnabled => HighlightMatches &&
+        (_highlightByForms ? HighlightForms.Count > 0 : HighlightNorm.Length > 0);
 
     /// <summary>يُطلب فتح صفحة المصحف مع تمييز الآية.</summary>
     public event Action<PageTarget>? OpenPageRequested;
@@ -60,6 +72,14 @@ public sealed partial class SearchResultsViewModel : ObservableObject
         _settings = AppSettings.Load();
         SelectedFont = _settings.SelectedFont;
         FontSize = _settings.FontSize;
+        HighlightMatches = _settings.HighlightMatches;
+    }
+
+    partial void OnHighlightMatchesChanged(bool value)
+    {
+        _settings.HighlightMatches = value;
+        _settings.Save();
+        ResultsChanged?.Invoke(); // أعد بناء البطاقات لتطبيق التظليل فوراً
     }
 
     private SearchOptions Options
@@ -101,22 +121,37 @@ public sealed partial class SearchResultsViewModel : ObservableObject
 
         var term = SearchQuery.Trim();
         IReadOnlyList<Ayah> results;
-        string label;
+        string label = string.Empty;
 
-        if (SearchByRoot)
+        // صفّر معطيات التظليل ثم اضبطها بحسب الوضع.
+        HighlightNorm = string.Empty;
+        HighlightForms = new HashSet<string>();
+        HighlightIsPart = false;
+        _highlightByForms = false;
+
+        switch (Mode)
         {
-            var roots = _repository.FindRoots(SearchQuery);
-            results = _repository.SearchByRoot(SearchQuery);
-            label = roots.Count > 0 ? roots[0] : term;
-            HighlightTerm = string.Empty; // الجذر لا يُظلَّل حرفياً داخل النص
-            StatusText = $"بحث بالجذر «{term}» — الجذر: {(roots.Count > 0 ? string.Join("، ", roots) : "—")}";
-        }
-        else
-        {
-            results = _repository.SearchText(SearchQuery, Options);
-            label = term;
-            HighlightTerm = term;
-            StatusText = $"نتائج البحث عن «{term}»";
+            case SearchMode.Root:
+                var roots = _repository.FindRoots(SearchQuery);
+                results = _repository.SearchByRoot(SearchQuery);
+                label = roots.Count > 0 ? roots[0] : term;
+                HighlightForms = new HashSet<string>(_repository.NormFormsOfRoots(SearchQuery));
+                _highlightByForms = true;
+                StatusText = $"بحث بالجذر «{term}» — الجذر: {(roots.Count > 0 ? string.Join("، ", roots) : "—")}";
+                break;
+
+            case SearchMode.Part:
+                results = _repository.SearchText(SearchQuery, Options, wholeWord: false);
+                HighlightNorm = ArabicText.Normalize(term);
+                HighlightIsPart = true;
+                StatusText = $"بحث عن جزء «{term}»";
+                break;
+
+            default: // SearchMode.Word
+                results = _repository.SearchText(SearchQuery, Options, wholeWord: true);
+                HighlightNorm = ArabicText.Normalize(term);
+                StatusText = $"بحث عن كلمة «{term}»";
+                break;
         }
 
         foreach (var ayah in results)
