@@ -15,27 +15,6 @@ const prayerNamesAr = {
   Prayer.isha: 'العشاء',
 };
 
-/// طريقة حساب: اسمها + رقمها في Aladhan.
-class CalcMethodDef {
-  final String key;
-  final String nameAr;
-  final int aladhanId;
-  const CalcMethodDef(this.key, this.nameAr, this.aladhanId);
-
-  static const List<CalcMethodDef> all = [
-    CalcMethodDef('mwl', 'رابطة العالم الإسلامي', 3),
-    CalcMethodDef('umm_al_qura', 'أم القرى (مكة)', 4),
-    CalcMethodDef('egyptian', 'الهيئة المصرية العامة', 5),
-    CalcMethodDef('karachi', 'جامعة كراتشي', 1),
-    CalcMethodDef('isna', 'ISNA (أمريكا الشمالية)', 2),
-    CalcMethodDef('tehran', 'جيوفيزياء طهران', 7),
-    CalcMethodDef('jafari', 'الجعفري (ليفا/قم)', 0),
-  ];
-
-  static CalcMethodDef byKey(String? key) =>
-      all.firstWhere((m) => m.key == key, orElse: () => all.first);
-}
-
 /// مواقيت يوم واحد لمدينة.
 class PrayerDay {
   final City city;
@@ -45,30 +24,25 @@ class PrayerDay {
   const PrayerDay(this.city, this.date, this.times, this.sourceLabel);
 }
 
-/// خدمة المواقيت: أونلاين من Aladhan مع كاش محلي (يُستخدم عند انقطاع النت).
+/// خدمة المواقيت: من الإنترنت (Aladhan) بالإعدادات الافتراضية للموقع،
+/// مع كاش محلي يُستخدم عند انقطاع النت.
 class PrayerTimesService {
   final _dio = Dio(BaseOptions(connectTimeout: const Duration(seconds: 15)));
 
-  String _cacheKey(City c, DateTime d, CalcMethodDef m, bool hanafi) =>
-      'ptcache:${c.name}:${d.year}-${d.month}-${d.day}:${m.key}:${hanafi ? 1 : 0}';
+  String _cacheKey(City c, DateTime d) =>
+      'ptcache:${c.name}:${d.year}-${d.month}-${d.day}';
 
   /// يجلب مواقيت يوم من Aladhan؛ عند الفشل يرجع آخر نتيجة مخزّنة لنفس اليوم،
   /// وإلا يرمي خطأً واضحاً.
-  Future<PrayerDay> getDay(
-      City city, DateTime date, CalcMethodDef method, bool hanafi) async {
+  Future<PrayerDay> getDay(City city, DateTime date) async {
     final sp = await SharedPreferences.getInstance();
-    final key = _cacheKey(city, date, method, hanafi);
+    final key = _cacheKey(city, date);
     try {
       final dd =
           '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
       final res = await _dio.get(
         'https://api.aladhan.com/v1/timings/$dd',
-        queryParameters: {
-          'latitude': city.lat,
-          'longitude': city.lng,
-          'method': method.aladhanId,
-          'school': hanafi ? 1 : 0,
-        },
+        queryParameters: {'latitude': city.lat, 'longitude': city.lng},
       );
       final timings = (res.data['data']['timings'] as Map).cast<String, dynamic>();
       await sp.setString(key, jsonEncode(timings));

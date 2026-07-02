@@ -89,37 +89,6 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Text('الطريقة:',
-                        style: TextStyle(color: Colors.white, fontSize: 12)),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: DropdownButton<String>(
-                        value: st.method.key,
-                        isExpanded: true,
-                        dropdownColor: _green,
-                        underline: const SizedBox.shrink(),
-                        iconEnabledColor: _gold,
-                        style: const TextStyle(color: Colors.white, fontSize: 13),
-                        items: [
-                          for (final m in CalcMethodDef.all)
-                            DropdownMenuItem(value: m.key, child: Text(m.nameAr)),
-                        ],
-                        onChanged: (v) { if (v != null) ctrl.setMethod(CalcMethodDef.byKey(v)); },
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Text('عصر حنفي',
-                        style: TextStyle(color: Colors.white, fontSize: 11)),
-                    Switch(
-                      value: st.hanafi,
-                      activeThumbColor: _gold,
-                      onChanged: ctrl.setHanafi,
-                    ),
-                  ],
-                ),
               ],
             ),
           ),

@@ -6,8 +6,6 @@ import 'prayer_service.dart';
 
 class PrayerState {
   final City city;
-  final CalcMethodDef method;
-  final bool hanafi;
   final Set<Prayer> notify;
   final PrayerDay? today;
   final PrayerDay? tomorrow;
@@ -16,8 +14,6 @@ class PrayerState {
 
   const PrayerState({
     required this.city,
-    required this.method,
-    this.hanafi = false,
     this.notify = const {},
     this.today,
     this.tomorrow,
@@ -27,8 +23,6 @@ class PrayerState {
 
   PrayerState copyWith({
     City? city,
-    CalcMethodDef? method,
-    bool? hanafi,
     Set<Prayer>? notify,
     PrayerDay? today,
     PrayerDay? tomorrow,
@@ -37,8 +31,6 @@ class PrayerState {
   }) =>
       PrayerState(
         city: city ?? this.city,
-        method: method ?? this.method,
-        hanafi: hanafi ?? this.hanafi,
         notify: notify ?? this.notify,
         today: today ?? this.today,
         tomorrow: tomorrow ?? this.tomorrow,
@@ -70,7 +62,7 @@ class PrayerController extends Notifier<PrayerState> {
   @override
   PrayerState build() {
     _init();
-    return PrayerState(city: City.all.first, method: CalcMethodDef.all.first);
+    return PrayerState(city: City.all.first);
   }
 
   Future<void> _init() async {
@@ -80,22 +72,19 @@ class PrayerController extends Notifier<PrayerState> {
         .toSet();
     state = state.copyWith(
       city: City.byName(_sp!.getString('pCity')),
-      method: CalcMethodDef.byKey(_sp!.getString('pMethod')),
-      hanafi: _sp!.getBool('pHanafi') ?? false,
       notify: notify,
     );
     await refresh();
   }
 
-  /// يجلب مواقيت اليوم والغد (أونلاين) ويعيد جدولة التنبيهات.
+  /// يجلب مواقيت اليوم والغد من الإنترنت ويعيد جدولة التنبيهات.
   Future<void> refresh() async {
     state = state.copyWith(loading: true, error: '');
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     try {
-      final d1 = await _service.getDay(state.city, today, state.method, state.hanafi);
-      final d2 = await _service.getDay(
-          state.city, today.add(const Duration(days: 1)), state.method, state.hanafi);
+      final d1 = await _service.getDay(state.city, today);
+      final d2 = await _service.getDay(state.city, today.add(const Duration(days: 1)));
       state = state.copyWith(today: d1, tomorrow: d2, loading: false);
       // جدولة يومين مقدماً (تتجدد عند كل فتح للتطبيق).
       await NotificationService.reschedule([d1, d2], state.notify);
@@ -109,18 +98,6 @@ class PrayerController extends Notifier<PrayerState> {
   void setCity(City c) {
     _sp?.setString('pCity', c.name);
     state = state.copyWith(city: c);
-    refresh();
-  }
-
-  void setMethod(CalcMethodDef m) {
-    _sp?.setString('pMethod', m.key);
-    state = state.copyWith(method: m);
-    refresh();
-  }
-
-  void setHanafi(bool v) {
-    _sp?.setBool('pHanafi', v);
-    state = state.copyWith(hanafi: v);
     refresh();
   }
 
