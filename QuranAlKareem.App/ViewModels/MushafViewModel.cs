@@ -51,6 +51,9 @@ public sealed partial class MushafViewModel : ObservableObject
     [ObservableProperty]
     private int _currentPage = 1;
 
+    /// <summary>الخطوط المتاحة (المفحوصة قرآنياً) لمبدّل الخط في الترويسة.</summary>
+    public IReadOnlyList<string> Fonts { get; } = Services.FontInstaller.DisplayNames;
+
     [ObservableProperty]
     private string _selectedFont = "Amiri Quran";
 
@@ -105,6 +108,15 @@ public sealed partial class MushafViewModel : ObservableObject
     {
         _settings.Reciter = value.Name;
         _settings.Save();
+    }
+
+    /// <summary>تغيير الخط من ترويسة الصفحة: يُطبَّق عالمياً ويعاد بناء الصفحة فوراً.</summary>
+    partial void OnSelectedFontChanged(string value)
+    {
+        if (_settings.SelectedFont == value) return; // تحميل أولي — لا حفظ ولا إعادة بناء
+        _settings.SelectedFont = value;
+        _settings.Save();
+        PageChanged?.Invoke();
     }
 
     /// <summary>يعرض إعراب الكلمة المنقورة في الشريط الجانبي.</summary>

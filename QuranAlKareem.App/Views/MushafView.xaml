@@ -16,6 +16,9 @@
                 <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
                     <CheckBox Content="عرض صفحتين" IsChecked="{Binding TwoPages}"
                               Foreground="White" VerticalAlignment="Center" />
+                    <TextBlock Text="الخط:" Foreground="#CFE6DA" VerticalAlignment="Center" Margin="16,0,6,0" />
+                    <ComboBox Width="185" ItemsSource="{Binding Fonts}" SelectedItem="{Binding SelectedFont}"
+                              VerticalAlignment="Center" />
                     <TextBlock Text="حجم الخط:" Foreground="#CFE6DA" VerticalAlignment="Center" Margin="16,0,6,0" />
                     <Button Content="−" Command="{Binding ZoomOutCommand}" Width="30" Height="28"
                             Background="#1A6B49" Foreground="White" BorderThickness="0" FontSize="16" Cursor="Hand" />
@@ -24,11 +27,11 @@
 
                     <Border Width="1" Background="#2E7D5A" Margin="14,4" />
                     <Button x:Name="CopySelBtn" Content="نسخ المحدَّد" Click="OnCopySelection" IsEnabled="False"
-                            Background="#C9A24B" Foreground="White" BorderThickness="0" Padding="10,5"
-                            Cursor="Hand" ToolTip="Ctrl + نقر على الكلمات لتحديد جزء من الآية ثم نسخه" />
+                            Style="{StaticResource FlatButton}" Background="#C9A24B" Padding="10,5" FontSize="12"
+                            ToolTip="Ctrl + نقر على الكلمات لتحديد جزء من الآية ثم نسخه" />
                     <Button x:Name="ClearSelBtn" Content="مسح التحديد" Click="OnClearSelection" IsEnabled="False"
-                            Background="#1A6B49" Foreground="White" BorderThickness="0" Padding="10,5"
-                            Margin="6,0,0,0" Cursor="Hand" />
+                            Style="{StaticResource FlatButton}" Background="#1A6B49" Padding="10,5" FontSize="12"
+                            Margin="6,0,0,0" />
                     <TextBlock Text="Ctrl+نقر لتحديد" Foreground="#8FBFA6" FontSize="10"
                                VerticalAlignment="Center" Margin="8,0,0,0" />
                 </StackPanel>

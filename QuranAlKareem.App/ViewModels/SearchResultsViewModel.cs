@@ -93,6 +93,7 @@ public sealed partial class SearchResultsViewModel : ObservableObject
 
     partial void OnSelectedFontChanged(string value)
     {
+        if (_settings.SelectedFont == value) return; // مزامنة من الإعدادات — لا حفظ ولا إعادة بناء
         _settings.SelectedFont = value;
         _settings.Save();
         ResultsChanged?.Invoke();

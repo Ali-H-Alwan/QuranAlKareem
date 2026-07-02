@@ -139,6 +139,24 @@ public sealed partial class MainViewModel : ObservableObject
         _settings.Save();
     }
 
+    /// <summary>
+    /// يعيد قراءة الإعدادات المحفوظة (الخطّ وغيره) دون إعادة حفظها —
+    /// يُستدعى عند العودة للتبويب حتى ينعكس الخطّ المطبَّق من صفحة الإعدادات.
+    /// </summary>
+    public void RefreshDisplaySettings()
+    {
+        var s = AppSettings.Load();
+        _loading = true;
+        FoldLetters = s.FoldLetters;
+        BothRasm = s.BothRasm;
+        CopyFullInfo = s.CopyFullInfo;
+        MushafTwoPages = s.MushafTwoPages;
+        HighlightMatches = s.HighlightMatches;
+        SelectedFont = s.SelectedFont;
+        FontSize = s.FontSize;
+        _loading = false;
+    }
+
     partial void OnHighlightMatchesChanged(bool value) => PersistSettings();
     partial void OnFoldLettersChanged(bool value) => PersistSettings();
     partial void OnBothRasmChanged(bool value) => PersistSettings();
@@ -176,7 +194,7 @@ public sealed partial class MainViewModel : ObservableObject
 
         if (string.IsNullOrWhiteSpace(SearchQuery)) return;
 
-        SelectedFont = AppSettings.Load().SelectedFont; // طبّق الخط المختار من الإعدادات
+        RefreshDisplaySettings(); // طبّق آخر خطّ/إعدادات محفوظة قبل عرض النتائج
 
         IReadOnlyList<Ayah> results;
         string rootsText = string.Empty;

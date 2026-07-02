@@ -45,6 +45,14 @@ public partial class MushafView : UserControl
         _vm.PageChanged += OnPageChanged;
         _vm.PlayingAyahChanged += HighlightPlaying;
         DataContext = _vm;
+
+        // عند العودة للتبويب: زامن قائمة الخط وأعد بناء الصفحة إن تغيّر الخطّ المطبَّق.
+        Loaded += (_, _) =>
+        {
+            _vm.SelectedFont = AppSettings.Load().SelectedFont; // مزامنة القائمة (بلا إعادة حفظ)
+            if (_builtFont.Length > 0 && AppSettings.Load().SelectedFont != _builtFont)
+                OnPageChanged();
+        };
         TabTitle = _vm.RightAyahs.Count > 0
             ? $"{_vm.RightAyahs[0].SurahName} • {startPage}"
             : $"صفحة {startPage}";
@@ -150,10 +158,14 @@ public partial class MushafView : UserControl
         }
     }
 
+    /// <summary>الخطّ الذي بُنيت به الصفحة (لإعادة البناء عند تغيّر الخطّ المطبَّق).</summary>
+    private string _builtFont = string.Empty;
+
     private void Prepare(TextBlock target)
     {
         target.Inlines.Clear();
-        target.FontFamily = Services.FontInstaller.Resolve(AppSettings.Load().SelectedFont);
+        _builtFont = AppSettings.Load().SelectedFont;
+        target.FontFamily = Services.FontInstaller.Resolve(_builtFont);
         target.FontSize = _vm.FontSize;
         target.LineHeight = _vm.FontSize * 1.9;
         target.LineStackingStrategy = LineStackingStrategy.BlockLineHeight;

@@ -121,7 +121,10 @@
             </Border>
 
             <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="الحجم" Foreground="{StaticResource Muted}" VerticalAlignment="Center" Margin="0,0,6,0" />
+                <TextBlock Text="الخط" Foreground="{StaticResource Muted}" VerticalAlignment="Center" Margin="0,0,6,0" />
+                <ComboBox Width="185" ItemsSource="{Binding Fonts}" SelectedItem="{Binding SelectedFont}"
+                          VerticalAlignment="Center" />
+                <TextBlock Text="الحجم" Foreground="{StaticResource Muted}" VerticalAlignment="Center" Margin="14,0,6,0" />
                 <Slider Width="140" Minimum="16" Maximum="46" Value="{Binding FontSize}" VerticalAlignment="Center" />
             </StackPanel>
 

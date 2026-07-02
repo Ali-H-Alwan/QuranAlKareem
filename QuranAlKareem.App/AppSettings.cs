@@ -32,7 +32,16 @@ public sealed class AppSettings
         }
     }
 
-    public static AppSettings Load()
+    private static AppSettings? _current;
+
+    /// <summary>
+    /// النسخة المشتركة الوحيدة للإعدادات في التطبيق كله.
+    /// (نسخ متعددة كانت تتسابق على الحفظ فيمسح بعضها تغييرات بعض —
+    /// كل Save يكتب الملف كاملاً، فيجب أن يكون المصدر واحداً.)
+    /// </summary>
+    public static AppSettings Load() => _current ??= LoadFromDisk();
+
+    private static AppSettings LoadFromDisk()
     {
         try
         {

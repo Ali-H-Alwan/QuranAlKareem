@@ -179,6 +179,9 @@ public sealed partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private void CheckUpdate() => AppUpdater.Instance.Check(showMessage: true);
 
+    /// <summary>يزامن «الخطّ المطبّق حالياً» مع الإعدادات (عند العودة للتبويب).</summary>
+    public void RefreshAppliedFont() => SelectedFont = AppSettings.Load().SelectedFont;
+
     /// <summary>يطبّق الخطّ المختار كخطّ عرض للتطبيق كله.</summary>
     [RelayCommand]
     private void ApplyFont()

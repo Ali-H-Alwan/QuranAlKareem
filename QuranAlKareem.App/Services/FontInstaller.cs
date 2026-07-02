@@ -27,9 +27,16 @@ public static class FontInstaller
 
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(60) };
 
-    /// <summary>أشهر خطوط المصحف الحرّة (روابط مباشرة من مستودع Google Fonts).</summary>
+    /// <summary>
+    /// خطوط المصحف المعتمدة — كلها مفحوصة فحصاً آلياً بتغطية كامل محارف
+    /// نص المصحف (81 محرفاً: الحروف والتشكيل وعلامات الوقف وأقواس الآيات)،
+    /// فلا تظهر مربعات. لا تُضِف خطاً هنا قبل فحص تغطيته.
+    /// </summary>
     public static readonly IReadOnlyList<QuranFont> Catalog = new[]
     {
+        new QuranFont("KFGQPC Uthmanic Script HAFS", "KFGQPC Uthmanic Script HAFS", "UthmanicHafs.otf",
+            "https://github.com/nuqayah/qpc-fonts/raw/master/various/UthmanicHafs1%20Ver09.otf",
+            "الخط الرسمي لمصحف المدينة النبوية (حفص) — مجمع الملك فهد."),
         new QuranFont("Amiri Quran", "Amiri Quran", "AmiriQuran-Regular.ttf",
             "https://github.com/google/fonts/raw/main/ofl/amiriquran/AmiriQuran-Regular.ttf",
             "خطّ نسخي مخصّص لرسم المصحف مع الضبط الكامل."),
@@ -45,51 +52,12 @@ public static class FontInstaller
         new QuranFont("Noto Naskh Arabic", "Noto Naskh Arabic", "NotoNaskhArabic-Regular.ttf",
             "https://github.com/google/fonts/raw/main/ofl/notonaskharabic/NotoNaskhArabic%5Bwght%5D.ttf",
             "نسخ واضح من مجموعة Noto من Google."),
-        new QuranFont("Aref Ruqaa", "Aref Ruqaa", "ArefRuqaa-Regular.ttf",
-            "https://github.com/google/fonts/raw/main/ofl/arefruqaa/ArefRuqaa-Regular.ttf",
-            "خطّ ثُلث/رقعة فنّي أنيق للعناوين والبسملة."),
-        new QuranFont("Reem Kufi", "Reem Kufi", "ReemKufi-Regular.ttf",
-            "https://github.com/google/fonts/raw/main/ofl/reemkufi/ReemKufi%5Bwght%5D.ttf",
-            "خطّ كوفي عصري بزوايا هندسية."),
-        new QuranFont("Markazi Text", "Markazi Text", "MarkaziText-Regular.ttf",
-            "https://github.com/google/fonts/raw/main/ofl/markazitext/MarkaziText%5Bwght%5D.ttf",
-            "خطّ نصّي مريح مناسب للمتون الطويلة."),
-        new QuranFont("El Messiri", "El Messiri", "ElMessiri-Regular.ttf",
-            "https://github.com/google/fonts/raw/main/ofl/elmessiri/ElMessiri%5Bwght%5D.ttf",
-            "خطّ عربي عصري متوازن."),
-        new QuranFont("Noto Nastaliq Urdu", "Noto Nastaliq Urdu", "NotoNastaliqUrdu-Regular.ttf",
-            "https://github.com/google/fonts/raw/main/ofl/notonastaliqurdu/NotoNastaliqUrdu%5Bwght%5D.ttf",
-            "خطّ نستعليق للرسم الفارسي/الأوردي."),
-        new QuranFont("Katibeh", "Katibeh", "Katibeh-Regular.ttf",
-            "https://github.com/google/fonts/raw/main/ofl/katibeh/Katibeh-Regular.ttf",
-            "خطّ ديواني/فنّي للعناوين."),
-        new QuranFont("Tajawal", "Tajawal", "Tajawal-Regular.ttf",
-            "https://github.com/google/fonts/raw/main/ofl/tajawal/Tajawal-Regular.ttf",
-            "خطّ عربي حديث واضح (بلا زخرفة)."),
-        new QuranFont("Cairo", "Cairo", "Cairo-Regular.ttf",
-            "https://github.com/google/fonts/raw/main/ofl/cairo/Cairo%5Bslnt%2Cwght%5D.ttf",
-            "خطّ عصري شائع للواجهات والنصوص."),
         new QuranFont("Harmattan", "Harmattan", "Harmattan-Regular.ttf",
             "https://github.com/google/fonts/raw/main/ofl/harmattan/Harmattan-Regular.ttf",
             "نسخ خفيف مريح (SIL)."),
-        new QuranFont("Almarai", "Almarai", "Almarai-Regular.ttf",
-            "https://github.com/google/fonts/raw/main/ofl/almarai/Almarai-Regular.ttf",
-            "خطّ عربي حديث نظيف."),
-        new QuranFont("Changa", "Changa", "Changa-Regular.ttf",
-            "https://github.com/google/fonts/raw/main/ofl/changa/Changa%5Bwght%5D.ttf",
-            "خطّ عصري بحواف واضحة."),
-        new QuranFont("Lalezar", "Lalezar", "Lalezar-Regular.ttf",
-            "https://github.com/google/fonts/raw/main/ofl/lalezar/Lalezar-Regular.ttf",
-            "خطّ عريض للعناوين."),
-        new QuranFont("Mirza", "Mirza", "Mirza-Regular.ttf",
-            "https://github.com/google/fonts/raw/main/ofl/mirza/Mirza%5Bwght%5D.ttf",
-            "خطّ نستعليقي أنيق للعناوين."),
-        new QuranFont("Gulzar", "Gulzar", "Gulzar-Regular.ttf",
-            "https://github.com/google/fonts/raw/main/ofl/gulzar/Gulzar-Regular.ttf",
-            "خطّ نستعليق للرسم الأوردي/الفارسي."),
-        new QuranFont("Vazirmatn", "Vazirmatn", "Vazirmatn-Regular.ttf",
-            "https://github.com/google/fonts/raw/main/ofl/vazirmatn/Vazirmatn%5Bwght%5D.ttf",
-            "خطّ حديث واضح للعربية والفارسية."),
+        new QuranFont("Jomhuria", "Jomhuria", "Jomhuria-Regular.ttf",
+            "https://github.com/google/fonts/raw/main/ofl/jomhuria/Jomhuria-Regular.ttf",
+            "ثُلث عريض للعناوين — بتغطية قرآنية كاملة."),
     };
 
     /// <summary>

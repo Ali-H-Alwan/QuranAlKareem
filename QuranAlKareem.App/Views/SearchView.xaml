@@ -118,7 +118,10 @@
 
                 <!-- الخط والحجم والإعدادات -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="الحجم" Foreground="#CFE6DA" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <TextBlock Text="الخط" Foreground="#CFE6DA" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <ComboBox Width="170" ItemsSource="{Binding Fonts}" SelectedItem="{Binding SelectedFont}"
+                              VerticalAlignment="Center" />
+                    <TextBlock Text="الحجم" Foreground="#CFE6DA" VerticalAlignment="Center" Margin="10,0,6,0" />
                     <Slider Width="110" Minimum="16" Maximum="54" Value="{Binding FontSize}"
                             VerticalAlignment="Center" Margin="0,0,0,0" />
 

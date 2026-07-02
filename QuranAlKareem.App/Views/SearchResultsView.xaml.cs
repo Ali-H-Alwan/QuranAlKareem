@@ -45,6 +45,14 @@ public partial class SearchResultsView : UserControl
         _vm.ResultsChanged += BuildResults;
         DataContext = _vm;
 
+        // عند العودة للتبويب: زامن قائمة الخط وأعد بناء النتائج إن تغيّر الخطّ المطبَّق.
+        Loaded += (_, _) =>
+        {
+            _vm.SelectedFont = AppSettings.Load().SelectedFont; // مزامنة القائمة (بلا إعادة حفظ)
+            if (_builtFont.Length > 0 && AppSettings.Load().SelectedFont != _builtFont)
+                BuildResults();
+        };
+
         _ = new SearchAutoComplete(SearchBox, SuggestPopup, SuggestList,
             () => _vm.Mode == SearchMode.Root,
             text =>
@@ -54,12 +62,16 @@ public partial class SearchResultsView : UserControl
             });
     }
 
+    /// <summary>الخطّ الذي بُنيت به البطاقات (لإعادة البناء عند تغيّر الخطّ المطبَّق).</summary>
+    private string _builtFont = string.Empty;
+
     private void BuildResults()
     {
         ResultsPanel.Children.Clear();
         ResultsScroll.ScrollToTop();
 
-        var font = Services.FontInstaller.Resolve(AppSettings.Load().SelectedFont);
+        _builtFont = AppSettings.Load().SelectedFont;
+        var font = Services.FontInstaller.Resolve(_builtFont);
         var index = 1;
 
         foreach (var item in _vm.Results)

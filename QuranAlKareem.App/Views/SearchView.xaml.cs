@@ -24,6 +24,9 @@ public partial class SearchView : UserControl
         _vm.OpenSettingsRequested += () => OpenSettingsRequested?.Invoke();
         DataContext = _vm;
 
+        // عند العودة للتبويب: طبّق الخطّ المختار من الإعدادات فوراً.
+        Loaded += (_, _) => _vm.RefreshDisplaySettings();
+
         _ = new SearchAutoComplete(SearchBox, SuggestPopup, SuggestList,
             () => _vm.Mode == SearchMode.Root,
             text =>
