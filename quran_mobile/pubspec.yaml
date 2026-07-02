@@ -17,11 +17,33 @@ dependencies:
   dio: ^5.7.0
   just_audio: ^0.9.42
   cupertino_icons: ^1.0.8
+  adhan: ^2.0.0
+  flutter_local_notifications: ^19.0.0
+  timezone: ^0.10.0
+  flutter_timezone: ^4.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.1
+  flutter_native_splash: ^2.4.4
+
+# أيقونة التطبيق (تولَّد بـ flutter_launcher_icons)
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/icon.png
+  adaptive_icon_background: "#0E5A3C"
+  adaptive_icon_foreground: assets/splash_logo.png
+
+# شاشة البداية (تولَّد بـ flutter_native_splash)
+flutter_native_splash:
+  color: "#0E5A3C"
+  image: assets/splash_logo.png
+  android_12:
+    color: "#0E5A3C"
+    image: assets/splash_logo.png
 
 flutter:
   uses-material-design: true

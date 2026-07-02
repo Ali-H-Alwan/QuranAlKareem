@@ -1,0 +1,219 @@
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/arabic_text.dart';
+import 'cities.dart';
+import 'prayer_controller.dart';
+import 'prayer_service.dart';
+
+const _green = Color(0xFF0E5A3C);
+const _gold = Color(0xFFC9A24B);
+const _card = Color(0xFFFBF8F1);
+
+/// شاشة مواقيت الصلاة: المدينة + المصدر + الطريقة + الصلاة القادمة + أجراس التنبيه.
+class PrayerScreen extends ConsumerStatefulWidget {
+  const PrayerScreen({super.key});
+
+  @override
+  ConsumerState<PrayerScreen> createState() => _PrayerScreenState();
+}
+
+class _PrayerScreenState extends ConsumerState<PrayerScreen> {
+  Timer? _ticker;
+
+  @override
+  void initState() {
+    super.initState();
+    // تحديث العدّاد التنازلي كل ثانية.
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
+  }
+
+  String _fmt(DateTime t) {
+    final h12 = t.hour % 12 == 0 ? 12 : t.hour % 12;
+    final suffix = t.hour < 12 ? 'ص' : 'م';
+    return '${toArabicDigits(h12)}:${toArabicDigits(t.minute).padLeft(2, '٠')} $suffix';
+  }
+
+  String _countdown(DateTime t) {
+    final d = t.difference(DateTime.now());
+    if (d.isNegative) return '';
+    final h = d.inHours, m = d.inMinutes % 60, s = d.inSeconds % 60;
+    return '${toArabicDigits(h)}:${toArabicDigits(m).padLeft(2, '٠')}:${toArabicDigits(s).padLeft(2, '٠')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final st = ref.watch(prayerProvider);
+    final ctrl = ref.read(prayerProvider.notifier);
+    final next = st.nextPrayer();
+
+    return ListView(
+      padding: const EdgeInsets.all(12),
+      children: [
+        // ── الخيارات ──
+        Card(
+          color: _green,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.location_on, color: _gold, size: 20),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: DropdownButton<String>(
+                        value: st.city.name,
+                        isExpanded: true,
+                        dropdownColor: _green,
+                        underline: const SizedBox.shrink(),
+                        iconEnabledColor: _gold,
+                        style: const TextStyle(
+                            color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                        items: [
+                          for (final c in City.all)
+                            DropdownMenuItem(
+                                value: c.name, child: Text('${c.name} (${c.country})')),
+                        ],
+                        onChanged: (v) { if (v != null) ctrl.setCity(City.byName(v)); },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                SegmentedButton<PrayerSource>(
+                  segments: const [
+                    ButtonSegment(
+                        value: PrayerSource.offline,
+                        label: Text('أوفلاين (حساب محلي)'),
+                        icon: Icon(Icons.offline_bolt, size: 16)),
+                    ButtonSegment(
+                        value: PrayerSource.online,
+                        label: Text('أونلاين'),
+                        icon: Icon(Icons.cloud, size: 16)),
+                  ],
+                  selected: {st.source},
+                  onSelectionChanged: (s) => ctrl.setSource(s.first),
+                  style: SegmentedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    selectedBackgroundColor: _gold,
+                    selectedForegroundColor: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Text('الطريقة:',
+                        style: TextStyle(color: Colors.white, fontSize: 12)),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: DropdownButton<String>(
+                        value: st.method.key,
+                        isExpanded: true,
+                        dropdownColor: _green,
+                        underline: const SizedBox.shrink(),
+                        iconEnabledColor: _gold,
+                        style: const TextStyle(color: Colors.white, fontSize: 13),
+                        items: [
+                          for (final m in CalcMethodDef.all)
+                            DropdownMenuItem(value: m.key, child: Text(m.nameAr)),
+                        ],
+                        onChanged: (v) { if (v != null) ctrl.setMethod(CalcMethodDef.byKey(v)); },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text('عصر حنفي',
+                        style: TextStyle(color: Colors.white, fontSize: 11)),
+                    Switch(
+                      value: st.hanafi,
+                      activeThumbColor: _gold,
+                      onChanged: ctrl.setHanafi,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // ── الصلاة القادمة ──
+        if (next != null)
+          Card(
+            color: _gold,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              child: Column(
+                children: [
+                  Text('الصلاة القادمة: ${prayerNamesAr[next.$1]}',
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                  const SizedBox(height: 4),
+                  Text(_fmt(next.$2),
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold, fontSize: 30)),
+                  Text('باقي ${_countdown(next.$2)}',
+                      style: const TextStyle(color: Colors.white, fontSize: 14)),
+                ],
+              ),
+            ),
+          ),
+
+        // ── جدول اليوم ──
+        if (st.loading)
+          const Padding(
+            padding: EdgeInsets.all(30),
+            child: Center(child: CircularProgressIndicator(color: _green)),
+          )
+        else if (st.today != null) ...[
+          for (final p in Prayer.values)
+            Card(
+              color: next != null && next.$1 == p ? const Color(0xFFFBEBB6) : _card,
+              margin: const EdgeInsets.symmetric(vertical: 3),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: const BorderSide(color: Color(0xFFE6D9B8)),
+              ),
+              child: ListTile(
+                dense: true,
+                leading: p == Prayer.sunrise
+                    ? const Icon(Icons.wb_sunny_outlined, color: _gold)
+                    : IconButton(
+                        icon: Icon(
+                          st.notify.contains(p)
+                              ? Icons.notifications_active
+                              : Icons.notifications_off_outlined,
+                          color: st.notify.contains(p) ? _green : Colors.grey,
+                        ),
+                        tooltip: 'تنبيه ${prayerNamesAr[p]}',
+                        onPressed: () => ctrl.toggleNotify(p),
+                      ),
+                title: Text(prayerNamesAr[p]!,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                trailing: Text(_fmt(st.today!.times[p]!),
+                    style: const TextStyle(
+                        color: _green, fontWeight: FontWeight.bold, fontSize: 17)),
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              'المصدر: ${st.today!.sourceLabel} • اضغط الجرس لتفعيل/إيقاف تنبيه كل صلاة',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.grey, fontSize: 11),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
