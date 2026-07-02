@@ -69,11 +69,24 @@ String normalizeLight(String? text) {
   return sb.toString().trim();
 }
 
-/// يحوّل رقماً إلى أرقام هندية (٠١٢…).
+/// نمط الأرقام بكل التطبيق: عربية (٠١٢٣) أو إنكليزية (0123).
+/// يضبطه خيار الإعدادات، وتقرؤه كل دوال العرض لحظة التنسيق.
+bool useArabicDigits = true;
+
+/// يعرض رقماً بالنمط المختار (هندية ٠١٢… أو 012…).
 String toArabicDigits(int n) {
+  if (!useArabicDigits) return n.toString();
   const ar = '٠١٢٣٤٥٦٧٨٩';
   return n.toString().split('').map((d) {
     final i = d.codeUnitAt(0) - 0x30;
     return (i >= 0 && i <= 9) ? ar[i] : d;
   }).join();
+}
+
+/// يعرض رقماً بعرض ثابت (حشو أصفار) بالنمط المختار — للدقائق والثواني.
+String padDigits(int n, int width) {
+  final s = n.toString().padLeft(width, '0');
+  if (!useArabicDigits) return s;
+  const ar = '٠١٢٣٤٥٦٧٨٩';
+  return s.split('').map((d) => ar[d.codeUnitAt(0) - 0x30]).join();
 }

@@ -98,6 +98,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         ),
 
+        // ── الأرقام ──
+        _card(
+          title: '🔢 نمط الأرقام',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('أرقام الآيات والصفحات والمواقيت في كل التطبيق:',
+                  style: TextStyle(fontSize: 12, color: Colors.grey)),
+              const SizedBox(height: 8),
+              SegmentedButton<bool>(
+                segments: const [
+                  ButtonSegment(value: true, label: Text('عربية  ٠١٢٣٤٥')),
+                  ButtonSegment(value: false, label: Text('إنكليزية  012345')),
+                ],
+                selected: {prefs.arabicDigits},
+                onSelectionChanged: (s) =>
+                    ref.read(prefsProvider.notifier).setArabicDigits(s.first),
+                style: SegmentedButton.styleFrom(
+                  selectedBackgroundColor: _green,
+                  selectedForegroundColor: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+
         // ── التلاوة ──
         _card(
           title: '🎧 التلاوة',

@@ -82,6 +82,5 @@ class NotificationService {
     }
   }
 
-  static String _fmt(DateTime t) =>
-      '${toArabicDigits(t.hour)}:${t.minute.toString().padLeft(2, '0').split('').map((d) => '٠١٢٣٤٥٦٧٨٩'[int.parse(d)]).join()}';
+  static String _fmt(DateTime t) => '${toArabicDigits(t.hour)}:${padDigits(t.minute, 2)}';
 }

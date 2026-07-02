@@ -39,14 +39,14 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> {
   String _fmt(DateTime t) {
     final h12 = t.hour % 12 == 0 ? 12 : t.hour % 12;
     final suffix = t.hour < 12 ? 'ص' : 'م';
-    return '${toArabicDigits(h12)}:${toArabicDigits(t.minute).padLeft(2, '٠')} $suffix';
+    return '${toArabicDigits(h12)}:${padDigits(t.minute, 2)} $suffix';
   }
 
   String _countdown(DateTime t) {
     final d = t.difference(DateTime.now());
     if (d.isNegative) return '';
     final h = d.inHours, m = d.inMinutes % 60, s = d.inSeconds % 60;
-    return '${toArabicDigits(h)}:${toArabicDigits(m).padLeft(2, '٠')}:${toArabicDigits(s).padLeft(2, '٠')}';
+    return '${toArabicDigits(h)}:${padDigits(m, 2)}:${padDigits(s, 2)}';
   }
 
   @override
@@ -88,26 +88,6 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> {
                       ),
                     ),
                   ],
-                ),
-                const SizedBox(height: 8),
-                SegmentedButton<PrayerSource>(
-                  segments: const [
-                    ButtonSegment(
-                        value: PrayerSource.offline,
-                        label: Text('أوفلاين (حساب محلي)'),
-                        icon: Icon(Icons.offline_bolt, size: 16)),
-                    ButtonSegment(
-                        value: PrayerSource.online,
-                        label: Text('أونلاين'),
-                        icon: Icon(Icons.cloud, size: 16)),
-                  ],
-                  selected: {st.source},
-                  onSelectionChanged: (s) => ctrl.setSource(s.first),
-                  style: SegmentedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    selectedBackgroundColor: _gold,
-                    selectedForegroundColor: Colors.white,
-                  ),
                 ),
                 const SizedBox(height: 8),
                 Row(
@@ -169,7 +149,25 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> {
           ),
 
         // ── جدول اليوم ──
-        if (st.loading)
+        if (st.error.isNotEmpty)
+          Card(
+            color: const Color(0xFFFDECEA),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                children: [
+                  Text(st.error,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Color(0xFF9A4A3A), fontSize: 13)),
+                  TextButton(
+                      onPressed: () => ref.read(prayerProvider.notifier).refresh(),
+                      child: const Text('إعادة المحاولة',
+                          style: TextStyle(fontWeight: FontWeight.bold))),
+                ],
+              ),
+            ),
+          )
+        else if (st.loading)
           const Padding(
             padding: EdgeInsets.all(30),
             child: Center(child: CircularProgressIndicator(color: _green)),

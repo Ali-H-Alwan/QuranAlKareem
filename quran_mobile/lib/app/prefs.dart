@@ -1,23 +1,28 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../core/arabic_text.dart';
 
-/// إعدادات التطبيق المحفوظة (خط العرض، الحجم، القارئ).
+/// إعدادات التطبيق المحفوظة (خط العرض، الحجم، القارئ، نمط الأرقام).
 class AppPrefs {
   final String fontFamily;
   final double fontSize;
   final String reciterName;
+  final bool arabicDigits;
 
   const AppPrefs({
     this.fontFamily = 'UthmanicHafs',
     this.fontSize = 22,
     this.reciterName = '',
+    this.arabicDigits = true,
   });
 
-  AppPrefs copyWith({String? fontFamily, double? fontSize, String? reciterName}) =>
+  AppPrefs copyWith(
+          {String? fontFamily, double? fontSize, String? reciterName, bool? arabicDigits}) =>
       AppPrefs(
         fontFamily: fontFamily ?? this.fontFamily,
         fontSize: fontSize ?? this.fontSize,
         reciterName: reciterName ?? this.reciterName,
+        arabicDigits: arabicDigits ?? this.arabicDigits,
       );
 }
 
@@ -39,11 +44,20 @@ class PrefsNotifier extends Notifier<AppPrefs> {
 
   Future<void> _load() async {
     _sp = await SharedPreferences.getInstance();
+    final arabic = _sp!.getBool('arabicDigits') ?? true;
+    useArabicDigits = arabic; // النمط العالمي المقروء من كل دوال التنسيق
     state = AppPrefs(
       fontFamily: _sp!.getString('fontFamily') ?? 'UthmanicHafs',
       fontSize: _sp!.getDouble('fontSize') ?? 22,
       reciterName: _sp!.getString('reciter') ?? '',
+      arabicDigits: arabic,
     );
+  }
+
+  void setArabicDigits(bool v) {
+    useArabicDigits = v;
+    state = state.copyWith(arabicDigits: v);
+    _sp?.setBool('arabicDigits', v);
   }
 
   void setFont(String family) {

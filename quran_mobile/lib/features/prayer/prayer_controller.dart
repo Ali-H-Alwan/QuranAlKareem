@@ -6,44 +6,44 @@ import 'prayer_service.dart';
 
 class PrayerState {
   final City city;
-  final PrayerSource source;
   final CalcMethodDef method;
   final bool hanafi;
   final Set<Prayer> notify;
   final PrayerDay? today;
   final PrayerDay? tomorrow;
   final bool loading;
+  final String error;
 
   const PrayerState({
     required this.city,
-    this.source = PrayerSource.offline,
     required this.method,
     this.hanafi = false,
     this.notify = const {},
     this.today,
     this.tomorrow,
     this.loading = true,
+    this.error = '',
   });
 
   PrayerState copyWith({
     City? city,
-    PrayerSource? source,
     CalcMethodDef? method,
     bool? hanafi,
     Set<Prayer>? notify,
     PrayerDay? today,
     PrayerDay? tomorrow,
     bool? loading,
+    String? error,
   }) =>
       PrayerState(
         city: city ?? this.city,
-        source: source ?? this.source,
         method: method ?? this.method,
         hanafi: hanafi ?? this.hanafi,
         notify: notify ?? this.notify,
         today: today ?? this.today,
         tomorrow: tomorrow ?? this.tomorrow,
         loading: loading ?? this.loading,
+        error: error ?? this.error,
       );
 
   /// الصلاة القادمة (اليوم أو فجر الغد) مع وقتها.
@@ -80,7 +80,6 @@ class PrayerController extends Notifier<PrayerState> {
         .toSet();
     state = state.copyWith(
       city: City.byName(_sp!.getString('pCity')),
-      source: _sp!.getString('pSource') == 'online' ? PrayerSource.online : PrayerSource.offline,
       method: CalcMethodDef.byKey(_sp!.getString('pMethod')),
       hanafi: _sp!.getBool('pHanafi') ?? false,
       notify: notify,
@@ -88,28 +87,28 @@ class PrayerController extends Notifier<PrayerState> {
     await refresh();
   }
 
-  /// يعيد حساب مواقيت اليوم والغد ويعيد جدولة التنبيهات.
+  /// يجلب مواقيت اليوم والغد (أونلاين) ويعيد جدولة التنبيهات.
   Future<void> refresh() async {
-    state = state.copyWith(loading: true);
+    state = state.copyWith(loading: true, error: '');
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final d1 = await _service.getDay(state.source, state.city, today, state.method, state.hanafi);
-    final d2 = await _service.getDay(
-        state.source, state.city, today.add(const Duration(days: 1)), state.method, state.hanafi);
-    state = state.copyWith(today: d1, tomorrow: d2, loading: false);
-    // جدولة يومين مقدماً (تتجدد عند كل فتح للتطبيق).
-    await NotificationService.reschedule([d1, d2], state.notify);
+    try {
+      final d1 = await _service.getDay(state.city, today, state.method, state.hanafi);
+      final d2 = await _service.getDay(
+          state.city, today.add(const Duration(days: 1)), state.method, state.hanafi);
+      state = state.copyWith(today: d1, tomorrow: d2, loading: false);
+      // جدولة يومين مقدماً (تتجدد عند كل فتح للتطبيق).
+      await NotificationService.reschedule([d1, d2], state.notify);
+    } catch (e) {
+      state = state.copyWith(
+          loading: false,
+          error: 'تعذّر جلب المواقيت — تحقّق من الإنترنت ثم أعد المحاولة');
+    }
   }
 
   void setCity(City c) {
     _sp?.setString('pCity', c.name);
     state = state.copyWith(city: c);
-    refresh();
-  }
-
-  void setSource(PrayerSource s) {
-    _sp?.setString('pSource', s.name);
-    state = state.copyWith(source: s);
     refresh();
   }
 

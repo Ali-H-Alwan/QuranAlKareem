@@ -17,7 +17,6 @@ dependencies:
   dio: ^5.7.0
   just_audio: ^0.9.42
   cupertino_icons: ^1.0.8
-  adhan: ^2.0.0
   flutter_local_notifications: ^19.0.0
   timezone: ^0.10.0
   flutter_timezone: ^4.0.0
