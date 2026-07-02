@@ -5,6 +5,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import '../app/prefs.dart';
+import '../core/arabic_text.dart';
 import '../data/models.dart';
 import '../data/reciters.dart';
 
@@ -109,7 +110,9 @@ class AudioController extends Notifier<AudioState> {
       final path = await _ensure(_reciter, a.surahNumber, a.numberInSurah);
       if (session != _session) return; // أُلغي أثناء التحميل
       await _player.setFilePath(path);
-      state = state.copyWith(busy: false, status: 'يُتلى: ${a.surahName} ﴿${a.numberInSurah}﴾');
+      state = state.copyWith(
+          busy: false,
+          status: 'يُتلى: ${a.surahName} ﴿${toArabicDigits(a.numberInSurah)}﴾');
       await _player.play();
     } catch (_) {
       if (session != _session) return;
