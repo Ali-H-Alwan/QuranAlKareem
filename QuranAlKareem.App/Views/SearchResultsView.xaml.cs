@@ -133,9 +133,8 @@ public partial class SearchResultsView : UserControl
             LineHeight = _vm.FontSize * 1.8,
             LineStackingStrategy = LineStackingStrategy.BlockLineHeight,
         };
-        FillText(text, item.Ayah.SimpleText.Length > 0
-            ? item.Ayah.SimpleText
-            : ArabicText.NormalizeLight(item.Ayah.Text));
+        // نفس عرض صفحة المصحف: عثماني كامل الحركات مع إصلاح الياء الصغيرة.
+        FillText(text, ArabicText.ForDisplay(item.Ayah.Text));
         text.Inlines.Add(new Run($"  ﴿{ToArabicDigits(item.NumberInSurah)}﴾")
         {
             Foreground = GreenBrush,

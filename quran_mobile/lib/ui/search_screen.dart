@@ -201,7 +201,7 @@ class _ResultCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final display = normalizeLight(ayah.text);
+    final display = forDisplay(ayah.text); // مثل صفحة المصحف: بالحركات
     final spans = <TextSpan>[];
     for (final w in display.split(' ')) {
       if (w.isEmpty) continue;
