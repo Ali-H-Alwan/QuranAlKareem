@@ -173,7 +173,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           child: const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('القرآن الكريم — الإصدار 1.0.0',
+              Text('الباحث القرآني — الإصدار 1.0.0',
                   style: TextStyle(fontWeight: FontWeight.bold, color: _green)),
               SizedBox(height: 4),
               Text('تطوير: شركة الرائد للحلول البرمجية',

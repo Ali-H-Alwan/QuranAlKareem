@@ -22,7 +22,7 @@ class QuranApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'القرآن الكريم',
+      title: 'الباحث القرآني',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: _green, primary: _green, secondary: _gold),
@@ -66,7 +66,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
             Text('﴿', style: TextStyle(color: _gold, fontSize: 24)),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Text('القرآن الكريم',
+              child: Text('الباحث القرآني',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
             ),
             Text('﴾', style: TextStyle(color: _gold, fontSize: 24)),

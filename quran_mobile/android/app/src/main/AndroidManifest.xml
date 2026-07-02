@@ -8,7 +8,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <application
-        android:label="القرآن الكريم"
+        android:label="الباحث القرآني"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
