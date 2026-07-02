@@ -1,4 +1,4 @@
-using QuranAlKareem.Core.Models;
+﻿using QuranAlKareem.Core.Models;
 using QuranAlKareem.Core.Services;
 
 namespace QuranAlKareem.App;
@@ -30,7 +30,10 @@ public static class CopyHelper
     public static string Build(Ayah ayah)
     {
         var s = AppSettings.Load();
-        var body = s.CopyWithoutTashkil ? ArabicText.NormalizeLight(ayah.Text) : ayah.Text;
+        // «بلا تشكيل»: الرسم الإملائي البسيط (تجريد العثماني يكسر مثل «إبراهيم»)
+        var body = s.CopyWithoutTashkil
+            ? (ayah.SimpleText.Length > 0 ? ayah.SimpleText : ArabicText.NormalizeLight(ayah.Text))
+            : ayah.Text;
         return s.CopyFullInfo
             ? $"{body} ﴿{ayah.NumberInSurah}﴾ — سورة {ayah.SurahName} (صفحة {ayah.Page})"
             : body;

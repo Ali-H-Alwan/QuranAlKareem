@@ -1,4 +1,4 @@
-using Microsoft.Data.Sqlite;
+﻿using Microsoft.Data.Sqlite;
 using QuranAlKareem.Core.Models;
 using QuranAlKareem.Core.Services;
 
@@ -35,7 +35,7 @@ public sealed class SqliteQuranRepository : IQuranRepository
         using var conn = Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = """
-            SELECT a.SurahNumber, s.Name, a.NumberInSurah, a.Text, a.Page
+            SELECT a.SurahNumber, s.Name, a.NumberInSurah, a.Text, a.Page, a.LightText
             FROM Ayahs a JOIN Surahs s ON s.Number = a.SurahNumber
             WHERE a.SurahNumber = $s
             ORDER BY a.NumberInSurah;
@@ -71,7 +71,7 @@ public sealed class SqliteQuranRepository : IQuranRepository
         using var conn = Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $"""
-            SELECT a.SurahNumber, s.Name, a.NumberInSurah, a.Text, a.Page
+            SELECT a.SurahNumber, s.Name, a.NumberInSurah, a.Text, a.Page, a.LightText
             FROM Ayahs a JOIN Surahs s ON s.Number = a.SurahNumber
             WHERE {where}
             ORDER BY a.SurahNumber, a.NumberInSurah;
@@ -147,7 +147,7 @@ public sealed class SqliteQuranRepository : IQuranRepository
         using var cmd = conn.CreateCommand();
         var placeholders = string.Join(",", roots.Select((_, i) => $"$r{i}"));
         cmd.CommandText = $"""
-            SELECT a.SurahNumber, s.Name, a.NumberInSurah, a.Text, a.Page
+            SELECT a.SurahNumber, s.Name, a.NumberInSurah, a.Text, a.Page, a.LightText
             FROM Ayahs a JOIN Surahs s ON s.Number = a.SurahNumber
             WHERE EXISTS (
                 SELECT 1 FROM Words w
@@ -260,7 +260,7 @@ public sealed class SqliteQuranRepository : IQuranRepository
         using var conn = Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = """
-            SELECT a.SurahNumber, s.Name, a.NumberInSurah, a.Text, a.Page
+            SELECT a.SurahNumber, s.Name, a.NumberInSurah, a.Text, a.Page, a.LightText
             FROM Ayahs a JOIN Surahs s ON s.Number = a.SurahNumber
             WHERE a.Page = $p
             ORDER BY a.SurahNumber, a.NumberInSurah;
@@ -368,6 +368,7 @@ public sealed class SqliteQuranRepository : IQuranRepository
                 NumberInSurah = reader.GetInt32(2),
                 Text = reader.GetString(3),
                 Page = reader.GetInt32(4),
+                SimpleText = reader.FieldCount > 5 && !reader.IsDBNull(5) ? reader.GetString(5) : string.Empty,
             });
         return result;
     }

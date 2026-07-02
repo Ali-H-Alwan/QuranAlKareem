@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -133,7 +133,9 @@ public partial class SearchResultsView : UserControl
             LineHeight = _vm.FontSize * 1.8,
             LineStackingStrategy = LineStackingStrategy.BlockLineHeight,
         };
-        FillText(text, ArabicText.NormalizeLight(item.Ayah.Text));
+        FillText(text, item.Ayah.SimpleText.Length > 0
+            ? item.Ayah.SimpleText
+            : ArabicText.NormalizeLight(item.Ayah.Text));
         text.Inlines.Add(new Run($"  ﴿{ToArabicDigits(item.NumberInSurah)}﴾")
         {
             Foreground = GreenBrush,
