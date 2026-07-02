@@ -1,5 +1,6 @@
 package com.alraed.quran_alkareem
 
-import io.flutter.embedding.android.FlutterActivity
+import com.ryanheise.audioservice.AudioServiceActivity
 
-class MainActivity : FlutterActivity()
+// يرث نشاط خدمة الصوت حتى تستمر التلاوة بالخلفية مع إشعار الوسائط.
+class MainActivity : AudioServiceActivity()

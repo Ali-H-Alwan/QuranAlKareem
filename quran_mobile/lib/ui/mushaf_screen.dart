@@ -1,9 +1,12 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../app/prefs.dart';
 import '../app/providers.dart';
 import '../core/arabic_text.dart';
+import '../data/models.dart';
 import '../data/reciters.dart';
 import '../services/audio_controller.dart';
 import 'ayah_sheet.dart';
@@ -62,9 +65,19 @@ class _MushafScreenState extends ConsumerState<MushafScreen> {
                     .setFontSize((prefs.fontSize + 2).clamp(14, 40)),
               ),
               const Spacer(),
-              Text('صفحة ${toArabicDigits(page)} / ${toArabicDigits(604)}',
-                  style: const TextStyle(
-                      color: _gold, fontWeight: FontWeight.bold, fontSize: 14)),
+              // اسم السورة + رقم الصفحة (في الشريط لا داخل الصفحة)
+              ref.watch(pageAyahsProvider(page)).maybeWhen(
+                    data: (ayahs) => Text(
+                      ayahs.isEmpty
+                          ? 'صفحة ${toArabicDigits(page)} / ${toArabicDigits(604)}'
+                          : '${ayahs.first.surahName}  —  صفحة ${toArabicDigits(page)} / ${toArabicDigits(604)}',
+                      style: const TextStyle(
+                          color: _gold, fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                    orElse: () => Text('صفحة ${toArabicDigits(page)} / ${toArabicDigits(604)}',
+                        style: const TextStyle(
+                            color: _gold, fontWeight: FontWeight.bold, fontSize: 14)),
+                  ),
             ],
           ),
         ),
@@ -165,6 +178,10 @@ class _MushafPage extends ConsumerWidget {
         error: (e, _) => Center(child: Text('خطأ: $e')),
         data: (ayahs) {
           final spans = <InlineSpan>[];
+          // مدى محارف كل آية داخل النص — لتحديد الآية المضغوطة مطوّلاً.
+          final ranges = <(int start, int end, Ayah ayah)>[];
+          var offset = 0;
+
           for (final a in ayahs) {
             final isTarget = target != null &&
                 target.$1 == a.surahNumber && target.$2 == a.numberInSurah;
@@ -173,8 +190,13 @@ class _MushafPage extends ConsumerWidget {
                 audio.current!.$2 == a.numberInSurah;
             final bg = isPlaying ? _playing : (isTarget ? _target : null);
 
+            final body = '${a.text} ';
+            final orn = ' ﴿${toArabicDigits(a.numberInSurah)}﴾ ';
+            ranges.add((offset, offset + body.length + orn.length, a));
+            offset += body.length + orn.length;
+
             spans.add(TextSpan(
-              text: '${a.text} ',
+              text: body,
               style: bg == null ? null : TextStyle(backgroundColor: bg),
               recognizer: TapGestureRecognizer()
                 ..onTap = () {
@@ -188,31 +210,45 @@ class _MushafPage extends ConsumerWidget {
                 },
             ));
             spans.add(TextSpan(
-              text: ' ﴿${toArabicDigits(a.numberInSurah)}﴾ ',
+              text: orn,
               style: TextStyle(
                   color: _green, fontWeight: FontWeight.bold, backgroundColor: bg),
             ));
           }
+
+          final textKey = GlobalKey();
           return SingleChildScrollView(
-            child: Column(
-              children: [
-                if (ayahs.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(ayahs.first.surahName,
-                        style: const TextStyle(
-                            color: _gold, fontWeight: FontWeight.bold, fontSize: 16)),
-                  ),
-                Text.rich(
-                  TextSpan(children: spans),
-                  textAlign: TextAlign.justify,
-                  style: TextStyle(
-                      fontFamily: prefs.fontFamily,
-                      fontSize: prefs.fontSize,
-                      height: 1.9,
-                      color: const Color(0xFF1A1A1A)),
-                ),
-              ],
+            child: GestureDetector(
+              // ضغطة مطوّلة على آية: تأشيرها ونسخها مباشرة.
+              onLongPressStart: (details) {
+                final para = textKey.currentContext?.findRenderObject();
+                if (para is! RenderParagraph) return;
+                final local = para.globalToLocal(details.globalPosition);
+                final pos = para.getPositionForOffset(local);
+                for (final (start, end, a) in ranges) {
+                  if (pos.offset >= start && pos.offset < end) {
+                    Clipboard.setData(ClipboardData(
+                        text: '﴿${a.text}﴾ [${a.surahName}: ${a.numberInSurah}]'));
+                    ref.read(targetAyahProvider.notifier).state =
+                        (a.surahNumber, a.numberInSurah);
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        duration: const Duration(seconds: 2),
+                        content: Text(
+                            'تم نسخ الآية ﴿${toArabicDigits(a.numberInSurah)}﴾ من ${a.surahName}')));
+                    break;
+                  }
+                }
+              },
+              child: Text.rich(
+                TextSpan(children: spans),
+                key: textKey,
+                textAlign: TextAlign.justify,
+                style: TextStyle(
+                    fontFamily: prefs.fontFamily,
+                    fontSize: prefs.fontSize,
+                    height: 1.9,
+                    color: const Color(0xFF1A1A1A)),
+              ),
             ),
           );
         },

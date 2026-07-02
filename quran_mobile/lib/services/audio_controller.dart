@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import '../app/prefs.dart';
@@ -109,16 +110,35 @@ class AudioController extends Notifier<AudioState> {
     try {
       final path = await _ensure(_reciter, a.surahNumber, a.numberInSurah);
       if (session != _session) return; // أُلغي أثناء التحميل
-      await _player.setFilePath(path);
+      // مصدر بوسم MediaItem: يُظهر التلاوة بإشعار الوسائط ويبقيها والشاشة مطفأة.
+      await _player.setAudioSource(AudioSource.uri(
+        Uri.file(path),
+        tag: MediaItem(
+          id: '${a.surahNumber}:${a.numberInSurah}',
+          album: 'الباحث القرآني',
+          title: '${a.surahName} — الآية ${toArabicDigits(a.numberInSurah)}',
+          artist: _reciter.name,
+        ),
+      ));
       state = state.copyWith(
           busy: false,
           status: 'يُتلى: ${a.surahName} ﴿${toArabicDigits(a.numberInSurah)}﴾');
+      _prefetchAhead(); // حمّل الآيات التالية أثناء التلاوة — انتقال بلا انقطاع
       await _player.play();
     } catch (_) {
       if (session != _session) return;
       state = state.copyWith(
           busy: false, playing: false, clearCurrent: true,
           status: 'تعذّر تحميل الصوت — تحقّق من الإنترنت');
+    }
+  }
+
+  /// يحمّل الآيات التالية مسبقاً بالخلفية أثناء التلاوة —
+  /// فيكون ملف الآية القادمة جاهزاً لحظة انتهاء الحالية (بلا انقطاع).
+  void _prefetchAhead({int count = 2}) {
+    for (var i = _idx + 1; i <= _idx + count && i < _queue.length; i++) {
+      final a = _queue[i];
+      _ensure(_reciter, a.surahNumber, a.numberInSurah).ignore();
     }
   }
 

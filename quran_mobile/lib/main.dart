@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'app/providers.dart';
 import 'features/prayer/prayer_screen.dart';
 import 'services/notification_service.dart';
@@ -9,6 +10,12 @@ import 'ui/settings_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // إشعار وسائط بشريط الإشعارات + استمرار التلاوة والشاشة مطفأة.
+  await JustAudioBackground.init(
+    androidNotificationChannelId: 'com.alraed.quran_alkareem.audio',
+    androidNotificationChannelName: 'تلاوة القرآن',
+    androidNotificationOngoing: true,
+  );
   await NotificationService.init(); // مناطق التوقيت + إذن الإشعارات
   runApp(const ProviderScope(child: QuranApp()));
 }

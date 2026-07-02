@@ -16,6 +16,7 @@ dependencies:
   shared_preferences: ^2.3.4
   dio: ^5.7.0
   just_audio: ^0.9.42
+  just_audio_background: ^0.0.1-beta.17
   cupertino_icons: ^1.0.8
   flutter_local_notifications: ^19.0.0
   timezone: ^0.10.0
