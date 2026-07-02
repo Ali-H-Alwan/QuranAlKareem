@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../app/prefs.dart';
 import '../app/providers.dart';
 import '../core/arabic_text.dart';
 import '../data/models.dart';
@@ -252,7 +253,10 @@ class _ResultCard extends ConsumerWidget {
               child: Text.rich(
                 TextSpan(children: spans),
                 textAlign: TextAlign.justify,
-                style: const TextStyle(fontFamily: 'UthmanicHafs', fontSize: 20, height: 1.9),
+                style: TextStyle(
+                    fontFamily: ref.watch(prefsProvider).fontFamily,
+                    fontSize: 20,
+                    height: 1.9),
               ),
             ),
           ],

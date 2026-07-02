@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- الإنترنت لتحميل التلاوة الصوتية (تُخزَّن ثم تعمل أوفلاين) -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
-        android:label="quran_alkareem"
+        android:label="القرآن الكريم"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

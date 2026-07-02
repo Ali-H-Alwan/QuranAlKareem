@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app/providers.dart';
 import 'ui/mushaf_screen.dart';
 import 'ui/search_screen.dart';
+import 'ui/settings_screen.dart';
 
 void main() => runApp(const ProviderScope(child: QuranApp()));
 
@@ -71,6 +72,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         children: [
           SearchScreen(onOpenPage: _openPage),
           const MushafScreen(),
+          const SettingsScreen(),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -80,6 +82,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         destinations: const [
           NavigationDestination(icon: Icon(Icons.search), label: 'البحث'),
           NavigationDestination(icon: Icon(Icons.menu_book), label: 'المصحف'),
+          NavigationDestination(icon: Icon(Icons.settings), label: 'الإعدادات'),
         ],
       ),
     );
