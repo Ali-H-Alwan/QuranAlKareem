@@ -9,6 +9,7 @@ import '../app/prefs.dart';
 import '../core/arabic_text.dart';
 import '../data/models.dart';
 import '../data/reciters.dart';
+import '../data/surah_reciters.dart';
 
 /// حالة التلاوة.
 class AudioState {
@@ -143,6 +144,10 @@ class AudioController extends Notifier<AudioState> {
   }
 
   Future<void> _next() async {
+    if (_queue.isEmpty) {
+      await stop(message: 'انتهت السورة'); // وضع السورة الكاملة
+      return;
+    }
     if (_idx + 1 >= _queue.length) {
       await stop(message: 'انتهت تلاوة الصفحة');
       return;
@@ -156,6 +161,42 @@ class AudioController extends Notifier<AudioState> {
     _session++;
     await _player.stop();
     state = AudioState(status: message);
+  }
+
+  // ═══ وضع «السورة الكاملة» (MP3Quran) ═══
+
+  /// يشغّل السورة كاملة: بثّ فوري مع تخزين أثناء التشغيل (يعمل أوفلاين لاحقاً).
+  Future<void> playSurah(int surah, String surahName) async {
+    _queue = const [];
+    _session++;
+    final r = SurahReciter.byName(ref.read(prefsProvider).surahReciterName);
+    state = state.copyWith(
+        busy: true, playing: true, clearCurrent: true,
+        status: 'سورة كاملة: $surahName — ${r.name}');
+    try {
+      final docs = await getApplicationDocumentsDirectory();
+      final dir = Directory(p.join(docs.path, 'audio_surah', r.cacheFolder));
+      if (!dir.existsSync()) dir.createSync(recursive: true);
+      final cache = File(p.join(dir.path, '${surah.toString().padLeft(3, '0')}.mp3'));
+
+      // ignore: experimental_member_use — آلية التخزين أثناء البثّ الموثّقة في just_audio
+      await _player.setAudioSource(LockCachingAudioSource(
+        Uri.parse(r.urlFor(surah)),
+        cacheFile: cache,
+        tag: MediaItem(
+          id: 'surah:$surah',
+          album: 'الباحث القرآني',
+          title: 'سورة $surahName',
+          artist: r.name,
+        ),
+      ));
+      state = state.copyWith(busy: false);
+      await _player.play();
+    } catch (_) {
+      state = state.copyWith(
+          busy: false, playing: false,
+          status: 'تعذّر تشغيل السورة — تحقّق من الإنترنت');
+    }
   }
 }
 

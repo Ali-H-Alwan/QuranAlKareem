@@ -9,20 +9,33 @@ class AppPrefs {
   final String reciterName;
   final bool arabicDigits;
 
+  /// وضع الاستماع: آية-آية (everyayah) أو سورة كاملة (MP3Quran).
+  final bool surahMode;
+  final String surahReciterName;
+
   const AppPrefs({
     this.fontFamily = 'UthmanicHafs',
     this.fontSize = 22,
     this.reciterName = '',
     this.arabicDigits = true,
+    this.surahMode = false,
+    this.surahReciterName = '',
   });
 
   AppPrefs copyWith(
-          {String? fontFamily, double? fontSize, String? reciterName, bool? arabicDigits}) =>
+          {String? fontFamily,
+          double? fontSize,
+          String? reciterName,
+          bool? arabicDigits,
+          bool? surahMode,
+          String? surahReciterName}) =>
       AppPrefs(
         fontFamily: fontFamily ?? this.fontFamily,
         fontSize: fontSize ?? this.fontSize,
         reciterName: reciterName ?? this.reciterName,
         arabicDigits: arabicDigits ?? this.arabicDigits,
+        surahMode: surahMode ?? this.surahMode,
+        surahReciterName: surahReciterName ?? this.surahReciterName,
       );
 }
 
@@ -51,7 +64,19 @@ class PrefsNotifier extends Notifier<AppPrefs> {
       fontSize: _sp!.getDouble('fontSize') ?? 22,
       reciterName: _sp!.getString('reciter') ?? '',
       arabicDigits: arabic,
+      surahMode: _sp!.getBool('surahMode') ?? false,
+      surahReciterName: _sp!.getString('surahReciter') ?? '',
     );
+  }
+
+  void setSurahMode(bool v) {
+    state = state.copyWith(surahMode: v);
+    _sp?.setBool('surahMode', v);
+  }
+
+  void setSurahReciter(String name) {
+    state = state.copyWith(surahReciterName: name);
+    _sp?.setString('surahReciter', name);
   }
 
   void setArabicDigits(bool v) {

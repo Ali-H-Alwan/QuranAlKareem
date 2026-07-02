@@ -8,6 +8,7 @@ import '../app/providers.dart';
 import '../core/arabic_text.dart';
 import '../data/models.dart';
 import '../data/reciters.dart';
+import '../data/surah_reciters.dart';
 import '../services/audio_controller.dart';
 import 'ayah_sheet.dart';
 
@@ -82,28 +83,72 @@ class _MushafScreenState extends ConsumerState<MushafScreen> {
           ),
         ),
 
-        // شريط التلاوة
+        // شريط التلاوة: وضع (آية آية / سورة كاملة) + قارئ الوضع + تشغيل
         Container(
           color: const Color(0xFF0A3F2A),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           child: Row(
             children: [
-              Expanded(
-                child: DropdownButton<String>(
-                  value: Reciter.byName(prefs.reciterName).name,
-                  isExpanded: true,
-                  dropdownColor: const Color(0xFF0A3F2A),
-                  iconEnabledColor: _gold,
-                  underline: const SizedBox.shrink(),
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
-                  items: [
-                    for (final r in Reciter.all)
-                      DropdownMenuItem(value: r.name, child: Text(r.name)),
-                  ],
-                  onChanged: (v) {
-                    if (v != null) ref.read(prefsProvider.notifier).setReciter(v);
-                  },
+              SegmentedButton<bool>(
+                showSelectedIcon: false,
+                style: ButtonStyle(
+                  visualDensity: VisualDensity.compact,
+                  padding: const WidgetStatePropertyAll(
+                      EdgeInsets.symmetric(horizontal: 8)),
+                  backgroundColor: WidgetStateProperty.resolveWith((s) =>
+                      s.contains(WidgetState.selected) ? _gold : Colors.white),
+                  foregroundColor: WidgetStateProperty.resolveWith((s) =>
+                      s.contains(WidgetState.selected) ? Colors.white : _green),
+                  textStyle: const WidgetStatePropertyAll(
+                      TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                 ),
+                segments: const [
+                  ButtonSegment(value: false, label: Text('آية آية')),
+                  ButtonSegment(value: true, label: Text('سورة')),
+                ],
+                selected: {prefs.surahMode},
+                onSelectionChanged: (s) {
+                  ref.read(audioProvider.notifier).stop();
+                  ref.read(prefsProvider.notifier).setSurahMode(s.first);
+                },
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: prefs.surahMode
+                    ? DropdownButton<String>(
+                        value: SurahReciter.byName(prefs.surahReciterName).name,
+                        isExpanded: true,
+                        dropdownColor: const Color(0xFF0A3F2A),
+                        iconEnabledColor: _gold,
+                        underline: const SizedBox.shrink(),
+                        style: const TextStyle(color: Colors.white, fontSize: 13),
+                        items: [
+                          for (final r in SurahReciter.all)
+                            DropdownMenuItem(value: r.name, child: Text(r.name)),
+                        ],
+                        onChanged: (v) {
+                          if (v != null) {
+                            ref.read(prefsProvider.notifier).setSurahReciter(v);
+                          }
+                        },
+                      )
+                    : DropdownButton<String>(
+                        value: Reciter.byName(prefs.reciterName).name,
+                        isExpanded: true,
+                        dropdownColor: const Color(0xFF0A3F2A),
+                        iconEnabledColor: _gold,
+                        underline: const SizedBox.shrink(),
+                        style: const TextStyle(color: Colors.white, fontSize: 13),
+                        items: [
+                          for (final r in Reciter.all)
+                            DropdownMenuItem(value: r.name, child: Text(r.name)),
+                        ],
+                        onChanged: (v) {
+                          if (v != null) {
+                            ref.read(prefsProvider.notifier).setReciter(v);
+                          }
+                        },
+                      ),
               ),
               if (audio.busy)
                 const Padding(
@@ -114,7 +159,9 @@ class _MushafScreenState extends ConsumerState<MushafScreen> {
                 )
               else
                 IconButton(
-                  tooltip: audio.playing ? 'إيقاف' : 'تلاوة الصفحة',
+                  tooltip: audio.playing
+                      ? 'إيقاف'
+                      : (prefs.surahMode ? 'تشغيل السورة كاملة' : 'تلاوة الصفحة'),
                   icon: Icon(audio.playing ? Icons.stop_circle : Icons.play_circle,
                       color: _gold, size: 30),
                   onPressed: () async {
@@ -124,7 +171,13 @@ class _MushafScreenState extends ConsumerState<MushafScreen> {
                     } else {
                       final ayahs =
                           await ref.read(pageAyahsProvider(page).future);
-                      await notifier.playAyahs(ayahs);
+                      if (ayahs.isEmpty) return;
+                      if (prefs.surahMode) {
+                        await notifier.playSurah(
+                            ayahs.first.surahNumber, ayahs.first.surahName);
+                      } else {
+                        await notifier.playAyahs(ayahs);
+                      }
                     }
                   },
                 ),
