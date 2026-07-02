@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- يسمح بالاتصال غير المشفّر للخادم المحلي فقط (وسيط just_audio للتخزين
+     أثناء البث) — كل الاتصالات الخارجية تبقى HTTPS حصراً. -->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">localhost</domain>
+    </domain-config>
+</network-security-config>
