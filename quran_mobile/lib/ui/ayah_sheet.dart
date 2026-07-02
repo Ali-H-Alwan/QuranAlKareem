@@ -49,7 +49,7 @@ Future<void> showAyahSheet(BuildContext context, WidgetRef ref, Ayah ayah) {
               ],
             ),
             const SizedBox(height: 8),
-            Text(ayah.text,
+            Text(forDisplay(ayah.text),
                 textAlign: TextAlign.justify,
                 style: const TextStyle(
                     fontFamily: 'UthmanicHafs', fontSize: 22, height: 2.0)),

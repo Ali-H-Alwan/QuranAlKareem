@@ -73,6 +73,13 @@ String normalizeLight(String? text) {
 /// يضبطه خيار الإعدادات، وتقرؤه كل دوال العرض لحظة التنسيق.
 bool useArabicDigits = true;
 
+
+/// تهيئة العثماني للعرض فقط: الياء الصغيرة المنفصلة وسط الكلمة
+/// (ۦ في إِبْرَٰهِۦمَ) تقطع اتصال الحروف — تُستبدل بتطويلة + ياء
+/// صغيرة مركّبة (ـۧ) كما في المصحف المطبوع.
+String forDisplay(String text) =>
+    text.replaceAllMapped(RegExp('ۦ(?=[ء-ي])'), (_) => 'ـۧ');
+
 /// يعرض رقماً بالنمط المختار (هندية ٠١٢… أو 012…).
 String toArabicDigits(int n) {
   if (!useArabicDigits) return n.toString();

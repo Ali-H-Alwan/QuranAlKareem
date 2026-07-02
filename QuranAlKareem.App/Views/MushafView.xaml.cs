@@ -187,7 +187,7 @@ public partial class MushafView : UserControl
             var ayahCaptured = ayah;
             foreach (var word in _vm.WordsOf(ayah))
             {
-                var run = new Run(word.Form + " ") { Cursor = System.Windows.Input.Cursors.Hand };
+                var run = new Run(ArabicText.ForDisplay(word.Form) + " ") { Cursor = System.Windows.Input.Cursors.Hand };
                 var captured = word;
                 run.MouseLeftButtonDown += (s, _) =>
                 {
@@ -220,7 +220,7 @@ public partial class MushafView : UserControl
         foreach (var ayah in ayahs)
         {
             var span = new Span { Cursor = System.Windows.Input.Cursors.Hand };
-            span.Inlines.Add(new Run(ayah.Text));
+            span.Inlines.Add(new Run(ArabicText.ForDisplay(ayah.Text)));
             span.Inlines.Add(Ornament(ayah.NumberInSurah));
 
             var captured = ayah;

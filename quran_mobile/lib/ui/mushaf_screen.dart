@@ -243,7 +243,7 @@ class _MushafPage extends ConsumerWidget {
                 audio.current!.$2 == a.numberInSurah;
             final bg = isPlaying ? _playing : (isTarget ? _target : null);
 
-            final body = '${a.text} ';
+            final body = '${forDisplay(a.text)} ';
             final orn = ' ﴿${toArabicDigits(a.numberInSurah)}﴾ ';
             ranges.add((offset, offset + body.length + orn.length, a));
             offset += body.length + orn.length;
