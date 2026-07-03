@@ -48,8 +48,8 @@ public sealed partial class SearchResultsViewModel : ObservableObject
     private bool _hasResults;
 
     // ── معطيات التظليل داخل نص الآية (تُحسب لحظة البحث، تُقرأ عند بناء البطاقات) ──
-    /// <summary>النص المطبّع المطلوب تظليله (للكلمة/الجزء).</summary>
-    public string HighlightNorm { get; private set; } = string.Empty;
+    /// <summary>الكلمات المطبّعة المطلوب تظليلها (للكلمة/الجزء، قد تكون عدّة كلمات).</summary>
+    public IReadOnlyList<string> HighlightNorms { get; private set; } = Array.Empty<string>();
     /// <summary>وضع الجزء: يُظلَّل أي كلمة تحتوي النص (لا المطابقة التامّة).</summary>
     public bool HighlightIsPart { get; private set; }
     /// <summary>وضع الجذر: يُظلَّل أي كلمة شكلُها ضمن هذه المجموعة.</summary>
@@ -58,7 +58,7 @@ public sealed partial class SearchResultsViewModel : ObservableObject
 
     /// <summary>هل التظليل مفعّل ويوجد ما يُظلَّل؟ (يُقرأ عند إعادة البناء).</summary>
     public bool HighlightEnabled => HighlightMatches &&
-        (_highlightByForms ? HighlightForms.Count > 0 : HighlightNorm.Length > 0);
+        (_highlightByForms ? HighlightForms.Count > 0 : HighlightNorms.Count > 0);
 
     /// <summary>يُطلب فتح صفحة المصحف مع تمييز الآية.</summary>
     public event Action<PageTarget>? OpenPageRequested;
@@ -125,10 +125,14 @@ public sealed partial class SearchResultsViewModel : ObservableObject
         string label = string.Empty;
 
         // صفّر معطيات التظليل ثم اضبطها بحسب الوضع.
-        HighlightNorm = string.Empty;
+        HighlightNorms = Array.Empty<string>();
         HighlightForms = new HashSet<string>();
         HighlightIsPart = false;
         _highlightByForms = false;
+
+        // كلمات البحث المطبّعة (قد تكون عدّة كلمات — تُظلَّل كلها).
+        var normWords = ArabicText.Normalize(term)
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
         switch (Mode)
         {
@@ -143,14 +147,14 @@ public sealed partial class SearchResultsViewModel : ObservableObject
 
             case SearchMode.Part:
                 results = _repository.SearchText(SearchQuery, Options, wholeWord: false);
-                HighlightNorm = ArabicText.Normalize(term);
+                HighlightNorms = normWords;
                 HighlightIsPart = true;
                 StatusText = $"بحث عن جزء «{term}»";
                 break;
 
             default: // SearchMode.Word
                 results = _repository.SearchText(SearchQuery, Options, wholeWord: true);
-                HighlightNorm = ArabicText.Normalize(term);
+                HighlightNorms = normWords;
                 StatusText = $"بحث عن كلمة «{term}»";
                 break;
         }
@@ -180,5 +184,17 @@ public sealed partial class SearchResultsViewModel : ObservableObject
         if (item is null) return;
         OpenPageRequested?.Invoke(
             new PageTarget(item.Ayah.Page, item.Ayah.SurahNumber, item.Ayah.NumberInSurah));
+    }
+
+    /// <summary>ينسخ كل آيات النتائج الحالية (كل واحدة بمعلوماتها) إلى الحافظة.</summary>
+    [RelayCommand]
+    private void CopyAll()
+    {
+        if (Results.Count == 0) return;
+        var sb = new System.Text.StringBuilder();
+        foreach (var item in Results)
+            sb.AppendLine(CopyHelper.Build(item.Ayah));
+        System.Windows.Clipboard.SetText(sb.ToString().TrimEnd());
+        StatusText = $"تم نسخ {Results.Count} آية من النتائج.";
     }
 }

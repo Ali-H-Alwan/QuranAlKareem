@@ -30,15 +30,25 @@ class QuranRepository {
     if (norm.isEmpty) return const [];
     final db = await _database;
 
-    final pattern = wholeWord ? '% $norm %' : '%$norm%';
+    // بحث ذكي متعدّد الكلمات: كل كلمة يجب أن ترد في الآية (AND، بأي ترتيب).
+    final terms = norm.split(' ').where((t) => t.isNotEmpty).toList();
+    if (terms.isEmpty) return const [];
     String col(String c) => wholeWord ? "(' ' || a.$c || ' ')" : 'a.$c';
+
+    final clauses = <String>[];
+    final args = <String>[];
+    for (final t in terms) {
+      final pattern = wholeWord ? '% $t %' : '%$t%';
+      clauses.add('(${col('NormText')} LIKE ? OR ${col('NormUthmani')} LIKE ?)');
+      args..add(pattern)..add(pattern);
+    }
 
     final rows = await db.rawQuery('''
       SELECT a.SurahNumber, s.Name AS SurahName, a.NumberInSurah, a.Text, a.Page
       FROM Ayahs a JOIN Surahs s ON s.Number = a.SurahNumber
-      WHERE ${col('NormText')} LIKE ? OR ${col('NormUthmani')} LIKE ?
+      WHERE ${clauses.join(' AND ')}
       ORDER BY a.SurahNumber, a.NumberInSurah
-    ''', [pattern, pattern]);
+    ''', args);
     return rows.map(Ayah.fromMap).toList();
   }
 

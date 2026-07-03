@@ -80,6 +80,18 @@ bool useArabicDigits = true;
 String forDisplay(String text) =>
     text.replaceAllMapped(RegExp('ۦ(?=[ء-ي])'), (_) => 'ـۧ');
 
+/// عرض إملائي واضح مع الإبقاء على الحركات (لنتائج البحث): يحوّل الرسم
+/// العثماني إلى إملاء مقروء — ألف الوصل/الخنجرية → ا، والياء/الواو
+/// الصغيرة → ي/و. فتظهر «إِبْرَاهِيمَ» و«دَاوُودَ» بدل «إِبْرَٰهِۦمَ».
+String forReading(String text) {
+  const m = {'ٱ': 'ا', 'ٰ': 'ا', 'ۦ': 'ي', 'ۥ': 'و'};
+  final sb = StringBuffer();
+  for (final ch in text.split('')) {
+    sb.write(m[ch] ?? ch);
+  }
+  return sb.toString();
+}
+
 /// يعرض رقماً بالنمط المختار (هندية ٠١٢… أو 012…).
 String toArabicDigits(int n) {
   if (!useArabicDigits) return n.toString();

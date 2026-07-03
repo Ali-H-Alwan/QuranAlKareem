@@ -110,15 +110,20 @@
 
         <!-- ═══ شريط الأدوات: العدّاد + الخط ═══ -->
         <DockPanel Grid.Row="1" Margin="2,14,2,12">
-            <Border DockPanel.Dock="Right" CornerRadius="20" Background="{StaticResource Green}"
-                    Padding="16,7" VerticalAlignment="Center"
-                    Visibility="{Binding HasResults, Converter={StaticResource BoolToVisibility}}">
-                <TextBlock VerticalAlignment="Center" FontSize="14">
-                    <Run Text="{Binding ResultCount, Mode=OneWay}" Foreground="{StaticResource Gold}"
-                         FontWeight="Bold" FontSize="17" />
-                    <Run Text="نتيجة" Foreground="White" />
-                </TextBlock>
-            </Border>
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                <Border CornerRadius="20" Background="{StaticResource Green}" Padding="16,7"
+                        VerticalAlignment="Center"
+                        Visibility="{Binding HasResults, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock VerticalAlignment="Center" FontSize="14">
+                        <Run Text="{Binding ResultCount, Mode=OneWay}" Foreground="{StaticResource Gold}"
+                             FontWeight="Bold" FontSize="17" />
+                        <Run Text="نتيجة" Foreground="White" />
+                    </TextBlock>
+                </Border>
+                <Button Content="📋 نسخ كل النتائج" Style="{StaticResource FlatButton}"
+                        Command="{Binding CopyAllCommand}" Margin="8,0,0,0" FontSize="13"
+                        Visibility="{Binding HasResults, Converter={StaticResource BoolToVisibility}}" />
+            </StackPanel>
 
             <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock Text="الخط" Foreground="{StaticResource Muted}" VerticalAlignment="Center" Margin="0,0,6,0" />

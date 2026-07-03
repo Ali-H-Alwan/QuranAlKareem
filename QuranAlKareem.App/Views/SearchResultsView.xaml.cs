@@ -133,8 +133,8 @@ public partial class SearchResultsView : UserControl
             LineHeight = _vm.FontSize * 1.8,
             LineStackingStrategy = LineStackingStrategy.BlockLineHeight,
         };
-        // نفس عرض صفحة المصحف: عثماني كامل الحركات مع إصلاح الياء الصغيرة.
-        FillText(text, ArabicText.ForDisplay(item.Ayah.Text));
+        // إملاء واضح مع الحركات (إبراهيم، داوود…) بدل الرسم العثماني الملتبس.
+        FillText(text, ArabicText.ForReading(item.Ayah.Text));
         text.Inlines.Add(new Run($"  ﴿{ToArabicDigits(item.NumberInSurah)}﴾")
         {
             Foreground = GreenBrush,
@@ -160,7 +160,7 @@ public partial class SearchResultsView : UserControl
     {
         target.Inlines.Clear();
         var enabled = _vm.HighlightEnabled;
-        var norm = _vm.HighlightNorm;
+        var norms = _vm.HighlightNorms;
 
         foreach (var word in text.Split(' ', StringSplitOptions.RemoveEmptyEntries))
         {
@@ -170,10 +170,10 @@ public partial class SearchResultsView : UserControl
                 var n = ArabicText.Normalize(word);
                 if (_vm.HighlightForms.Count > 0)            // وضع الجذر
                     isHit = _vm.HighlightForms.Contains(n);
-                else if (_vm.HighlightIsPart)               // وضع الجزء: احتواء
-                    isHit = norm.Length > 0 && n.Contains(norm, StringComparison.Ordinal);
-                else                                        // وضع الكلمة: تطابق تامّ
-                    isHit = norm.Length > 0 && n == norm;
+                else if (_vm.HighlightIsPart)               // وضع الجزء: احتواء أيّ كلمة بحث
+                    isHit = norms.Any(q => n.Contains(q, StringComparison.Ordinal));
+                else                                        // وضع الكلمة: تطابق أيّ كلمة بحث
+                    isHit = norms.Contains(n);
             }
 
             if (isHit)

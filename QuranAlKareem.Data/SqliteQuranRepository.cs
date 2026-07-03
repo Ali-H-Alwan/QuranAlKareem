@@ -59,24 +59,33 @@ public sealed class SqliteQuranRepository : IQuranRepository
         var imlaaiCol = options.FoldLetters ? "NormText" : "LightText";
         var uthmaniCol = options.FoldLetters ? "NormUthmani" : "LightUthmani";
 
-        // كلمة كاملة: نطابق ضمن حدود المسافات (نُحيط العمود والمُدخل بمسافة).
-        // جزء من كلمة: احتواء عادي (%norm%).
-        var pattern = wholeWord ? $"% {norm} %" : $"%{norm}%";
-        string Col(string c) => wholeWord ? $"(' ' || a.{c} || ' ')" : $"a.{c}";
+        // بحث ذكي متعدّد الكلمات: كل كلمة يجب أن ترد في الآية (بأي ترتيب،
+        // ولو غير متتابعة) — شرط AND لكل كلمة. كلمة واحدة = السلوك المعتاد.
+        var terms = norm.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (terms.Length == 0) return Array.Empty<Ayah>();
 
-        var where = options.BothRasm
-            ? $"{Col(imlaaiCol)} LIKE $q OR {Col(uthmaniCol)} LIKE $q"
-            : $"{Col(uthmaniCol)} LIKE $q";
+        string Col(string c) => wholeWord ? $"(' ' || a.{c} || ' ')" : $"a.{c}";
 
         using var conn = Open();
         using var cmd = conn.CreateCommand();
+        var clauses = new List<string>();
+        for (var i = 0; i < terms.Length; i++)
+        {
+            var p = $"$q{i}";
+            cmd.Parameters.AddWithValue(p, wholeWord ? $"% {terms[i]} %" : $"%{terms[i]}%");
+            // كل كلمة: تُطابق في الإملائي أو العثماني (حسب إعداد الرسمين).
+            clauses.Add(options.BothRasm
+                ? $"({Col(imlaaiCol)} LIKE {p} OR {Col(uthmaniCol)} LIKE {p})"
+                : $"{Col(uthmaniCol)} LIKE {p}");
+        }
+        var where = string.Join(" AND ", clauses);
+
         cmd.CommandText = $"""
             SELECT a.SurahNumber, s.Name, a.NumberInSurah, a.Text, a.Page, a.LightText
             FROM Ayahs a JOIN Surahs s ON s.Number = a.SurahNumber
             WHERE {where}
             ORDER BY a.SurahNumber, a.NumberInSurah;
             """;
-        cmd.Parameters.AddWithValue("$q", pattern);
         return ReadAyahs(cmd);
     }
 

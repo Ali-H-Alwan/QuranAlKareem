@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../app/prefs.dart';
 import '../app/providers.dart';
@@ -144,12 +145,36 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
           ),
 
-        // ── الحالة ──
+        // ── الحالة + نسخ كل النتائج ──
         if (state.status.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            child: Text(state.status,
-                style: const TextStyle(color: kGreen, fontWeight: FontWeight.bold, fontSize: 13)),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(state.status,
+                      style: const TextStyle(
+                          color: kGreen, fontWeight: FontWeight.bold, fontSize: 13)),
+                ),
+                if (state.results.isNotEmpty)
+                  TextButton.icon(
+                    icon: const Icon(Icons.copy_all, size: 18, color: kGreen),
+                    label: const Text('نسخ الكل',
+                        style: TextStyle(color: kGreen, fontWeight: FontWeight.bold)),
+                    onPressed: () {
+                      final buf = StringBuffer();
+                      for (final a in state.results) {
+                        buf.writeln(
+                            '﴿${a.text}﴾ [${a.surahName}: ${a.numberInSurah}]');
+                      }
+                      Clipboard.setData(
+                          ClipboardData(text: buf.toString().trim()));
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('تم نسخ ${state.results.length} آية')));
+                    },
+                  ),
+              ],
+            ),
           ),
 
         // ── النتائج ──
@@ -194,14 +219,16 @@ class _ResultCard extends ConsumerWidget {
     final n = normalize(word);
     if (state.highlightForms.isNotEmpty) return state.highlightForms.contains(n);
     if (state.highlightNorm.isEmpty) return false;
+    // قد تكون عدّة كلمات بحث — تُظلَّل كلها.
+    final terms = state.highlightNorm.split(' ').where((t) => t.isNotEmpty);
     return state.mode == SearchMode.part
-        ? n.contains(state.highlightNorm)
-        : n == state.highlightNorm;
+        ? terms.any((q) => n.contains(q))
+        : terms.contains(n);
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final display = forDisplay(ayah.text); // مثل صفحة المصحف: بالحركات
+    final display = forReading(ayah.text); // إملاء واضح + حركات (إبراهيم)
     final spans = <TextSpan>[];
     for (final w in display.split(' ')) {
       if (w.isEmpty) continue;
