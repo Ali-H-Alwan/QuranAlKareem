@@ -281,7 +281,7 @@ class _MushafPage extends ConsumerWidget {
                 for (final (start, end, a) in ranges) {
                   if (pos.offset >= start && pos.offset < end) {
                     Clipboard.setData(ClipboardData(
-                        text: '﴿${a.text}﴾ [${a.surahName}: ${a.numberInSurah}]'));
+                        text: '﴿${forReading(a.text)}﴾ [${a.surahName}: ${a.numberInSurah}]'));
                     ref.read(targetAyahProvider.notifier).state =
                         (a.surahNumber, a.numberInSurah);
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(

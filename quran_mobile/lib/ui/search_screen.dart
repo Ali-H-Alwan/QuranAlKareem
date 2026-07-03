@@ -165,7 +165,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       final buf = StringBuffer();
                       for (final a in state.results) {
                         buf.writeln(
-                            '﴿${a.text}﴾ [${a.surahName}: ${a.numberInSurah}]');
+                            '﴿${forReading(a.text)}﴾ [${a.surahName}: ${a.numberInSurah}]');
                       }
                       Clipboard.setData(
                           ClipboardData(text: buf.toString().trim()));

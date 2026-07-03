@@ -30,10 +30,11 @@ public static class CopyHelper
     public static string Build(Ayah ayah)
     {
         var s = AppSettings.Load();
-        // «بلا تشكيل»: الرسم الإملائي البسيط (تجريد العثماني يكسر مثل «إبراهيم»)
+        // «بلا تشكيل»: الرسم الإملائي البسيط. «مع تشكيل»: إملاء واضح مع الحركات
+        // (ForReading) — الرسم العثماني الخام يكسر «إبراهيم/داوود» عند اللصق.
         var body = s.CopyWithoutTashkil
             ? (ayah.SimpleText.Length > 0 ? ayah.SimpleText : ArabicText.NormalizeLight(ayah.Text))
-            : ayah.Text;
+            : ArabicText.ForReading(ayah.Text);
         return s.CopyFullInfo
             ? $"{body} ﴿{ayah.NumberInSurah}﴾ — سورة {ayah.SurahName} (صفحة {ayah.Page})"
             : body;

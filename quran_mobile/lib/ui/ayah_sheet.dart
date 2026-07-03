@@ -41,7 +41,7 @@ Future<void> showAyahSheet(BuildContext context, WidgetRef ref, Ayah ayah) {
                   onPressed: () {
                     Clipboard.setData(ClipboardData(
                         text:
-                            '﴿${ayah.text}﴾ [${ayah.surahName}: ${ayah.numberInSurah}]'));
+                            '﴿${forReading(ayah.text)}﴾ [${ayah.surahName}: ${ayah.numberInSurah}]'));
                     ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('تم نسخ الآية')));
                   },
