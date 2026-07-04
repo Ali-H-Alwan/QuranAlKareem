@@ -1,5 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 import '../core/arabic_text.dart';
@@ -26,8 +27,18 @@ class NotificationService {
     final android = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
     await android?.requestNotificationsPermission();
+    // إذن المنبّه الدقيق يفتح شاشة إعدادات النظام — نطلبه مرة واحدة فقط
+    // كي لا تنبثق الشاشة عند كل إقلاع إن رفضه المستخدم (نجدول تقريبياً).
     try {
-      await android?.requestExactAlarmsPermission();
+      final canExact =
+          await android?.canScheduleExactNotifications() ?? true;
+      if (!canExact) {
+        final sp = await SharedPreferences.getInstance();
+        if (!(sp.getBool('exactAlarmAsked') ?? false)) {
+          await sp.setBool('exactAlarmAsked', true);
+          await android?.requestExactAlarmsPermission();
+        }
+      }
     } catch (_) {/* غير متاح على بعض الأجهزة */}
     _ready = true;
   }
@@ -79,25 +90,23 @@ class NotificationService {
         if (t == null || t.isBefore(now)) continue;
         final when = tz.TZDateTime(
             tz.local, t.year, t.month, t.day, t.hour, t.minute);
+        Future<void> schedule(AndroidScheduleMode mode) =>
+            _plugin.zonedSchedule(
+              id++,
+              'حان الآن وقت صلاة ${prayerNamesAr[p]}',
+              '${day.city.name} — ${_fmt(t)}',
+              when,
+              details,
+              androidScheduleMode: mode,
+            );
         try {
-          await _plugin.zonedSchedule(
-            id++,
-            'حان الآن وقت صلاة ${prayerNamesAr[p]}',
-            '${day.city.name} — ${_fmt(t)}',
-            when,
-            details,
-            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-          );
+          await schedule(AndroidScheduleMode.exactAllowWhileIdle);
         } catch (_) {
-          // إن رُفض المنبّه الدقيق نجدول تقريبياً بدل الفشل.
-          await _plugin.zonedSchedule(
-            id++,
-            'حان الآن وقت صلاة ${prayerNamesAr[p]}',
-            '${day.city.name} — ${_fmt(t)}',
-            when,
-            details,
-            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-          );
+          // إن رُفض المنبّه الدقيق نجدول تقريبياً؛ وإن فشل هو الآخر
+          // نتجاوز هذا التنبيه ونكمل البقية بدل إسقاط الجدولة كلها.
+          try {
+            await schedule(AndroidScheduleMode.inexactAllowWhileIdle);
+          } catch (_) {}
         }
       }
     }

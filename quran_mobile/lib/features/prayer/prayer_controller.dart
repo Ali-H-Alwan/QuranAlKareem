@@ -88,8 +88,11 @@ class PrayerController extends Notifier<PrayerState> {
       final d1 = await _service.getDay(state.city, today);
       final d2 = await _service.getDay(state.city, today.add(const Duration(days: 1)));
       state = state.copyWith(today: d1, tomorrow: d2, loading: false);
-      // جدولة يومين مقدماً (تتجدد عند كل فتح للتطبيق).
-      await NotificationService.reschedule([d1, d2], state.notify, adhan: _adhanOn(_sp));
+      // جدولة يومين مقدماً (تتجدد عند كل فتح للتطبيق) — فشل الجدولة
+      // لا يُخفي المواقيت المعروضة ولا يُعرض كخطأ إنترنت.
+      try {
+        await NotificationService.reschedule([d1, d2], state.notify, adhan: _adhanOn(_sp));
+      } catch (_) {}
     } catch (e) {
       state = state.copyWith(
           loading: false,
@@ -110,7 +113,10 @@ class PrayerController extends Notifier<PrayerState> {
     state = state.copyWith(notify: n);
     // إعادة الجدولة فقط (بلا إعادة جلب المواقيت).
     final d1 = state.today, d2 = state.tomorrow;
-    if (d1 != null && d2 != null) NotificationService.reschedule([d1, d2], n, adhan: _adhanOn(_sp));
+    if (d1 != null && d2 != null) {
+      NotificationService.reschedule([d1, d2], n, adhan: _adhanOn(_sp))
+          .catchError((_) {});
+    }
   }
 }
 
