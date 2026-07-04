@@ -2,10 +2,12 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../ui/app_colors.dart';
 import '../prayer/prayer_controller.dart';
 
-const _green = Color(0xFF0E5A3C);
-const _gold = Color(0xFFC9A24B);
+// ألوان العلامة الثابتة (شريط العنوان وسهم القبلة).
+const _green = AppColors.brandGreen;
+const _gold = AppColors.gold;
 
 /// اتجاه القبلة: يحسب زاوية الكعبة من إحداثيات المدينة المختارة (بلا إذن موقع)
 /// ويدوّر السهم حسب بوصلة الجهاز.
@@ -45,8 +47,10 @@ class QiblaScreen extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(city.name,
-                    style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold, color: _green)),
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.green(context))),
                 Text('زاوية القبلة: ${qibla.toStringAsFixed(0)}° عن الشمال',
                     style: const TextStyle(color: Colors.grey)),
                 const SizedBox(height: 30),
@@ -66,7 +70,7 @@ class QiblaScreen extends ConsumerWidget {
                     return Text(
                       aligned ? '✅ أنت متّجه نحو القبلة' : 'أدِر جهازك حتى يشير السهم للأعلى',
                       style: TextStyle(
-                          color: aligned ? _green : Colors.grey,
+                          color: aligned ? AppColors.green(context) : Colors.grey,
                           fontWeight: FontWeight.bold,
                           fontSize: 16),
                     );
@@ -101,13 +105,16 @@ class _Compass extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: _green, width: 3),
-                color: const Color(0xFFFBF8F1),
+                border: Border.all(color: AppColors.green(context), width: 3),
+                color: AppColors.card(context),
               ),
-              child: const Align(
-                alignment: Alignment(0, -0.82),
+              child: Align(
+                alignment: const Alignment(0, -0.82),
                 child: Text('ش',
-                    style: TextStyle(color: _green, fontWeight: FontWeight.bold, fontSize: 20)),
+                    style: TextStyle(
+                        color: AppColors.green(context),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20)),
               ),
             ),
           ),

@@ -2,14 +2,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/arabic_text.dart';
+import '../../ui/app_colors.dart';
 import '../qibla/qibla_screen.dart';
 import 'cities.dart';
 import 'prayer_controller.dart';
 import 'prayer_service.dart';
 
-const _green = Color(0xFF0E5A3C);
-const _gold = Color(0xFFC9A24B);
-const _card = Color(0xFFFBF8F1);
+// ألوان العلامة الثابتة (بطاقة الخيارات الخضراء وبطاقة الصلاة القادمة الذهبية).
+const _green = AppColors.brandGreen;
+const _gold = AppColors.gold;
 
 /// شاشة مواقيت الصلاة: المدينة + المصدر + الطريقة + الصلاة القادمة + أجراس التنبيه.
 class PrayerScreen extends ConsumerStatefulWidget {
@@ -127,14 +128,15 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> {
         // ── جدول اليوم ──
         if (st.error.isNotEmpty)
           Card(
-            color: const Color(0xFFFDECEA),
+            color: AppColors.dangerCard(context),
             child: Padding(
               padding: const EdgeInsets.all(14),
               child: Column(
                 children: [
                   Text(st.error,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(color: Color(0xFF9A4A3A), fontSize: 13)),
+                      style: TextStyle(
+                          color: AppColors.danger(context), fontSize: 13)),
                   TextButton(
                       onPressed: () => ref.read(prayerProvider.notifier).refresh(),
                       child: const Text('إعادة المحاولة',
@@ -144,18 +146,23 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> {
             ),
           )
         else if (st.loading)
-          const Padding(
-            padding: EdgeInsets.all(30),
-            child: Center(child: CircularProgressIndicator(color: _green)),
+          Padding(
+            padding: const EdgeInsets.all(30),
+            child: Center(
+                child:
+                    CircularProgressIndicator(color: AppColors.green(context))),
           )
         else if (st.today != null) ...[
           for (final p in Prayer.values)
             Card(
-              color: next != null && next.$1 == p ? const Color(0xFFFBEBB6) : _card,
+              // الصلاة القادمة بتظليل ذهبي، والبقية على سطح البطاقات.
+              color: next != null && next.$1 == p
+                  ? AppColors.highlight(context)
+                  : AppColors.card(context),
               margin: const EdgeInsets.symmetric(vertical: 3),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
-                side: const BorderSide(color: Color(0xFFE6D9B8)),
+                side: BorderSide(color: AppColors.border(context)),
               ),
               child: ListTile(
                 dense: true,
@@ -166,7 +173,9 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> {
                           st.notify.contains(p)
                               ? Icons.notifications_active
                               : Icons.notifications_off_outlined,
-                          color: st.notify.contains(p) ? _green : Colors.grey,
+                          color: st.notify.contains(p)
+                              ? AppColors.green(context)
+                              : Colors.grey,
                         ),
                         tooltip: 'تنبيه ${prayerNamesAr[p]}',
                         onPressed: () => ctrl.toggleNotify(p),
@@ -174,8 +183,10 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> {
                 title: Text(prayerNamesAr[p]!,
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                 trailing: Text(_fmt(st.today!.times[p]!),
-                    style: const TextStyle(
-                        color: _green, fontWeight: FontWeight.bold, fontSize: 17)),
+                    style: TextStyle(
+                        color: AppColors.green(context),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 17)),
               ),
             ),
           Padding(

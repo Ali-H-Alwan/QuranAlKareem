@@ -5,9 +5,9 @@ import '../app/providers.dart';
 import '../core/arabic_text.dart';
 import '../data/models.dart';
 import '../features/bookmarks/bookmarks.dart';
+import 'app_colors.dart';
 
-const _green = Color(0xFF0E5A3C);
-const _gold = Color(0xFFC9A24B);
+const _gold = AppColors.gold; // ذهبي العلامة — ثابت في الوضعين.
 
 /// يعرض تفاصيل آية: نصّها + نسخ + التفسير الميسَّر + كلماتها (نقر = إعراب).
 Future<void> showAyahSheet(BuildContext context, WidgetRef ref, Ayah ayah) {
@@ -15,7 +15,7 @@ Future<void> showAyahSheet(BuildContext context, WidgetRef ref, Ayah ayah) {
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor: const Color(0xFFFBF8F1),
+    backgroundColor: AppColors.card(context),
     shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
     builder: (_) => DraggableScrollableSheet(
@@ -33,7 +33,9 @@ Future<void> showAyahSheet(BuildContext context, WidgetRef ref, Ayah ayah) {
                 Expanded(
                   child: Text(
                     '${ayah.surahName} — الآية ${toArabicDigits(ayah.numberInSurah)} — صفحة ${ayah.page}',
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: _green),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.green(context)),
                   ),
                 ),
                 // زر المفضّلة (يتحدّث فورياً)
@@ -79,8 +81,10 @@ Future<void> showAyahSheet(BuildContext context, WidgetRef ref, Ayah ayah) {
             const Divider(height: 24),
 
             // التفسير
-            const Text('التفسير الميسَّر',
-                style: TextStyle(fontWeight: FontWeight.bold, color: _green)),
+            Text('التفسير الميسَّر',
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.green(context))),
             FutureBuilder<String?>(
               future: repo.tafsir(ayah.surahNumber, ayah.numberInSurah),
               builder: (_, snap) => Padding(
@@ -92,8 +96,10 @@ Future<void> showAyahSheet(BuildContext context, WidgetRef ref, Ayah ayah) {
             const Divider(height: 24),
 
             // الكلمات (نقر = إعراب)
-            const Text('اضغط كلمة لعرض إعرابها',
-                style: TextStyle(fontWeight: FontWeight.bold, color: _green)),
+            Text('اضغط كلمة لعرض إعرابها',
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.green(context))),
             const SizedBox(height: 8),
             FutureBuilder<List<QuranWord>>(
               future: repo.wordsOf(ayah.surahNumber, ayah.numberInSurah),
@@ -106,8 +112,8 @@ Future<void> showAyahSheet(BuildContext context, WidgetRef ref, Ayah ayah) {
                       label: Text(w.form,
                           style: const TextStyle(
                               fontFamily: 'UthmanicHafs', fontSize: 18)),
-                      backgroundColor: Colors.white,
-                      side: const BorderSide(color: Color(0xFFE6D9B8)),
+                      backgroundColor: AppColors.surface(context),
+                      side: BorderSide(color: AppColors.border(context)),
                       onPressed: () => _showAnalysis(context, ref, w),
                     ),
                 ],
@@ -130,10 +136,12 @@ Future<void> _showAnalysis(BuildContext context, WidgetRef ref, QuranWord w) asy
     builder: (_) => Directionality(
       textDirection: TextDirection.rtl,
       child: AlertDialog(
-        backgroundColor: const Color(0xFFFBF8F1),
+        backgroundColor: AppColors.card(context),
         title: Text('إعراب: ${w.form}',
-            style: const TextStyle(
-                fontFamily: 'UthmanicHafs', color: _green, fontSize: 20)),
+            style: TextStyle(
+                fontFamily: 'UthmanicHafs',
+                color: AppColors.green(context),
+                fontSize: 20)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,13 +160,13 @@ Future<void> _showAnalysis(BuildContext context, WidgetRef ref, QuranWord w) asy
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(s.form,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontFamily: 'UthmanicHafs',
                             fontSize: 18,
-                            color: _green)),
+                            color: AppColors.green(context))),
                     Text(s.description,
-                        style:
-                            const TextStyle(fontSize: 13, color: Colors.black87)),
+                        style: TextStyle(
+                            fontSize: 13, color: AppColors.textSoft(context))),
                   ],
                 ),
               ),

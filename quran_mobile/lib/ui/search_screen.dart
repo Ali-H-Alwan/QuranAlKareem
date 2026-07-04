@@ -5,12 +5,12 @@ import '../app/prefs.dart';
 import '../app/providers.dart';
 import '../core/arabic_text.dart';
 import '../data/models.dart';
+import 'app_colors.dart';
 import 'ayah_sheet.dart';
 
-const kGreen = Color(0xFF0E5A3C);
-const kGold = Color(0xFFC9A24B);
-const kHit = Color(0xFFFBEBB6);
-const kParchment = Color(0xFFFBF8F1);
+// ألوان العلامة الثابتة (ترويسة البحث الخضراء بنصوص بيضاء/ذهبية في الوضعين).
+const kGreen = AppColors.brandGreen;
+const kGold = AppColors.gold;
 
 /// شاشة البحث: ثلاثة أوضاع + اقتراحات + نتائج مع تظليل المطابق.
 class SearchScreen extends ConsumerStatefulWidget {
@@ -69,9 +69,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       onChanged: _onChanged,
                       onSubmitted: (_) => _search(),
                       textInputAction: TextInputAction.search,
-                      style: const TextStyle(fontSize: 16),
+                      // الحقل أبيض دائماً — لذا نصّه داكن حتى في الوضع الليلي.
+                      style: TextStyle(
+                          fontSize: 16,
+                          color: AppColors.isDark(context) ? Colors.black87 : null),
                       decoration: InputDecoration(
                         hintText: 'اكتب كلمة البحث…',
+                        hintStyle: AppColors.isDark(context)
+                            ? const TextStyle(color: Colors.black45)
+                            : null,
                         filled: true,
                         fillColor: Colors.white,
                         isDense: true,
@@ -105,7 +111,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         selected: state.mode == m,
                         selectedColor: kGold,
                         labelStyle: TextStyle(
-                          color: state.mode == m ? Colors.white : kGreen,
+                          color: state.mode == m
+                              ? Colors.white
+                              : AppColors.green(context),
                           fontWeight: FontWeight.bold,
                         ),
                         onSelected: (_) => ref.read(searchProvider.notifier).setMode(m),
@@ -128,7 +136,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         if (_suggestions.isNotEmpty)
           Container(
             constraints: const BoxConstraints(maxHeight: 220),
-            color: Colors.white,
+            color: AppColors.surface(context),
             child: ListView.builder(
               shrinkWrap: true,
               itemCount: _suggestions.length,
@@ -137,7 +145,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 return ListTile(
                   dense: true,
                   title: Text(s.text, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: s.root == null ? null : Text('الجذر: ${s.root}', style: const TextStyle(color: kGreen)),
+                  subtitle: s.root == null
+                      ? null
+                      : Text('الجذر: ${s.root}',
+                          style: TextStyle(color: AppColors.green(context))),
                   trailing: Text('${s.count}', style: const TextStyle(color: Colors.grey)),
                   onTap: () => _applySuggestion(s),
                 );
@@ -153,14 +164,19 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               children: [
                 Expanded(
                   child: Text(state.status,
-                      style: const TextStyle(
-                          color: kGreen, fontWeight: FontWeight.bold, fontSize: 13)),
+                      style: TextStyle(
+                          color: AppColors.green(context),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13)),
                 ),
                 if (state.results.isNotEmpty)
                   TextButton.icon(
-                    icon: const Icon(Icons.copy_all, size: 18, color: kGreen),
-                    label: const Text('نسخ الكل',
-                        style: TextStyle(color: kGreen, fontWeight: FontWeight.bold)),
+                    icon: Icon(Icons.copy_all,
+                        size: 18, color: AppColors.green(context)),
+                    label: Text('نسخ الكل',
+                        style: TextStyle(
+                            color: AppColors.green(context),
+                            fontWeight: FontWeight.bold)),
                     onPressed: () {
                       final buf = StringBuffer();
                       for (final a in state.results) {
@@ -180,7 +196,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         // ── النتائج ──
         Expanded(
           child: state.searching
-              ? const Center(child: CircularProgressIndicator(color: kGreen))
+              ? Center(
+                  child:
+                      CircularProgressIndicator(color: AppColors.green(context)))
               : state.results.isEmpty
                   ? const Center(
                       child: Text('✦ اكتب كلمة ثم اضغط بحث',
@@ -235,22 +253,25 @@ class _ResultCard extends ConsumerWidget {
       spans.add(TextSpan(
         text: '$w ',
         style: _isHit(w)
-            ? const TextStyle(
-                backgroundColor: kHit, color: kGreen, fontWeight: FontWeight.bold)
+            ? TextStyle(
+                backgroundColor: AppColors.highlight(context),
+                color: AppColors.green(context),
+                fontWeight: FontWeight.bold)
             : null,
       ));
     }
     spans.add(TextSpan(
       text: ' ﴿${toArabicDigits(ayah.numberInSurah)}﴾',
-      style: const TextStyle(color: kGreen, fontWeight: FontWeight.bold),
+      style: TextStyle(
+          color: AppColors.green(context), fontWeight: FontWeight.bold),
     ));
 
     return Card(
-      color: kParchment,
+      color: AppColors.card(context),
       margin: const EdgeInsets.symmetric(vertical: 4),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
-        side: const BorderSide(color: Color(0xFFE6D9B8)),
+        side: BorderSide(color: AppColors.border(context)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),

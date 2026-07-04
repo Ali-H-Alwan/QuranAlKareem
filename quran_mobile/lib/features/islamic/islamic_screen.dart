@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../ui/app_colors.dart';
 import 'islamic_content.dart';
 
-const _green = Color(0xFF0E5A3C);
-const _gold = Color(0xFFC9A24B);
-const _card = Color(0xFFFBF8F1);
+const _gold = AppColors.gold; // ذهبي العلامة — ثابت في الوضعين.
 
 /// القسم الإسلامي: العقائد وفروع الدين والصلاة والطهارة (إمامي، فتوى السيستاني).
 class IslamicScreen extends StatelessWidget {
@@ -17,11 +16,11 @@ class IslamicScreen extends StatelessWidget {
       itemBuilder: (_, i) {
         final s = islamicSections[i];
         return Card(
-          color: _card,
+          color: AppColors.card(context),
           margin: const EdgeInsets.only(bottom: 10),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(color: Color(0xFFE6D9B8)),
+            side: BorderSide(color: AppColors.border(context)),
           ),
           child: Theme(
             data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
@@ -29,8 +28,10 @@ class IslamicScreen extends StatelessWidget {
               initiallyExpanded: i == 0,
               leading: Text(s.icon, style: const TextStyle(fontSize: 24)),
               title: Text(s.title,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 16, color: _green)),
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: AppColors.green(context))),
               childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
               children: [
                 if (s.note != null)
@@ -43,8 +44,8 @@ class IslamicScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text('ℹ ${s.note}',
-                        style: const TextStyle(
-                            fontSize: 11, color: Color(0xFF8A6D1F))),
+                        style: TextStyle(
+                            fontSize: 11, color: AppColors.noteText(context))),
                   ),
                 for (final item in s.items) _InfoTile(item: item),
               ],
@@ -67,9 +68,9 @@ class _InfoTile extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 4),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface(context),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFEFE7D2)),
+        border: Border.all(color: AppColors.borderSubtle(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,14 +81,17 @@ class _InfoTile extends StatelessWidget {
                   margin: const EdgeInsets.only(left: 8)),
               Expanded(
                 child: Text(item.title,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 14, color: _green)),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: AppColors.green(context))),
               ),
             ],
           ),
           const SizedBox(height: 6),
           Text(item.body,
-              style: const TextStyle(fontSize: 13.5, height: 1.9, color: Color(0xFF1A1A1A))),
+              style: TextStyle(
+                  fontSize: 13.5, height: 1.9, color: AppColors.text(context))),
         ],
       ),
     );

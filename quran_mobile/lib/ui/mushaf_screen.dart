@@ -12,13 +12,12 @@ import '../data/surah_reciters.dart';
 import '../features/bookmarks/bookmarks_sheet.dart';
 import '../features/khatma/khatma_sheet.dart';
 import '../services/audio_controller.dart';
+import 'app_colors.dart';
 import 'ayah_sheet.dart';
 
-const _green = Color(0xFF0E5A3C);
-const _gold = Color(0xFFC9A24B);
-const _target = Color(0xFFFBEBB6);
-const _playing = Color(0xFFCFE9D6);
-const _paper = Color(0xFFFFFDF6);
+// ألوان العلامة الثابتة (ترويسة خضراء بنص أبيض/ذهبي في الوضعين).
+const _green = AppColors.brandGreen;
+const _gold = AppColors.gold;
 
 /// شاشة المصحف: تقليب 604 صفحات بنص مبرَّر + تلاوة صوتية مع تمييز الآية الجارية.
 class MushafScreen extends ConsumerStatefulWidget {
@@ -201,11 +200,16 @@ class _MushafScreenState extends ConsumerState<MushafScreen> {
         if (audio.status.isNotEmpty)
           Container(
             width: double.infinity,
-            color: const Color(0xFFEFE7D2),
+            // شريط الحالة: كريمي نهاراً وداكن ليلاً.
+            color: AppColors.isDark(context)
+                ? const Color(0xFF1E241E)
+                : const Color(0xFFEFE7D2),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
             child: Text(audio.status,
-                style: const TextStyle(
-                    color: _green, fontSize: 11, fontWeight: FontWeight.bold)),
+                style: TextStyle(
+                    color: AppColors.green(context),
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold)),
           ),
 
         Expanded(
@@ -238,13 +242,14 @@ class _MushafPage extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: _paper,
+        color: AppColors.page(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _gold, width: 2),
+        border: Border.all(color: AppColors.pageBorder(context), width: 2),
       ),
       padding: const EdgeInsets.all(16),
       child: ayahsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: _green)),
+        loading: () => Center(
+            child: CircularProgressIndicator(color: AppColors.green(context))),
         error: (e, _) => Center(child: Text('خطأ: $e')),
         data: (ayahs) {
           final spans = <InlineSpan>[];
@@ -258,7 +263,9 @@ class _MushafPage extends ConsumerWidget {
             final isPlaying = audio.current != null &&
                 audio.current!.$1 == a.surahNumber &&
                 audio.current!.$2 == a.numberInSurah;
-            final bg = isPlaying ? _playing : (isTarget ? _target : null);
+            final bg = isPlaying
+                ? AppColors.playing(context)
+                : (isTarget ? AppColors.highlight(context) : null);
 
             final body = '${forDisplay(a.text)} ';
             final orn = ' ﴿${toArabicDigits(a.numberInSurah)}﴾ ';
@@ -282,7 +289,9 @@ class _MushafPage extends ConsumerWidget {
             spans.add(TextSpan(
               text: orn,
               style: TextStyle(
-                  color: _green, fontWeight: FontWeight.bold, backgroundColor: bg),
+                  color: AppColors.green(context),
+                  fontWeight: FontWeight.bold,
+                  backgroundColor: bg),
             ));
           }
 
@@ -317,7 +326,7 @@ class _MushafPage extends ConsumerWidget {
                     fontFamily: prefs.fontFamily,
                     fontSize: prefs.fontSize,
                     height: 1.9,
-                    color: const Color(0xFF1A1A1A)),
+                    color: AppColors.text(context)),
               ),
             ),
           );

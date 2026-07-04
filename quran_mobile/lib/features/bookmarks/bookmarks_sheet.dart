@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/providers.dart';
+import '../../ui/app_colors.dart';
 import 'bookmarks.dart';
 
-const _green = Color(0xFF0E5A3C);
-const _gold = Color(0xFFC9A24B);
+const _gold = AppColors.gold; // ذهبي العلامة — ثابت في الوضعين.
 
 /// ورقة المفضّلة: قائمة العلامات المحفوظة، النقر يفتح صفحتها ويظلّل الآية.
 void showBookmarksSheet(BuildContext context, WidgetRef ref) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor: const Color(0xFFFBF8F1),
+    backgroundColor: AppColors.card(context),
     shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
     builder: (_) => Directionality(
@@ -25,14 +25,16 @@ void showBookmarksSheet(BuildContext context, WidgetRef ref) {
             final items = ref.watch(bookmarksProvider);
             return Column(
               children: [
-                const Padding(
-                  padding: EdgeInsets.all(14),
+                Padding(
+                  padding: const EdgeInsets.all(14),
                   child: Row(children: [
-                    Icon(Icons.bookmarks, color: _gold),
-                    SizedBox(width: 8),
+                    const Icon(Icons.bookmarks, color: _gold),
+                    const SizedBox(width: 8),
                     Text('المفضّلة',
                         style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 18, color: _green)),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: AppColors.green(context))),
                   ]),
                 ),
                 if (items.isEmpty)
@@ -52,23 +54,26 @@ void showBookmarksSheet(BuildContext context, WidgetRef ref) {
                       itemBuilder: (_, i) {
                         final b = items[i];
                         return Card(
-                          color: Colors.white,
+                          color: AppColors.surface(context),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
-                            side: const BorderSide(color: Color(0xFFE6D9B8)),
+                            side: BorderSide(color: AppColors.border(context)),
                           ),
                           child: ListTile(
                             leading: CircleAvatar(
-                                backgroundColor: _green,
+                                // دائرة خضراء غامقة بنص أبيض — مقروءة في الوضعين.
+                                backgroundColor: AppColors.brandGreen,
                                 child: Text('${b.ayah}',
                                     style: const TextStyle(color: Colors.white, fontSize: 12))),
                             title: Text(b.surahName,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold, color: _green)),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.green(context))),
                             subtitle: Text(b.snippet,
                                 maxLines: 1, overflow: TextOverflow.ellipsis),
                             trailing: IconButton(
-                              icon: const Icon(Icons.delete_outline, color: Color(0xFF9A4A3A)),
+                              icon: Icon(Icons.delete_outline,
+                                  color: AppColors.danger(context)),
                               onPressed: () => ref.read(bookmarksProvider.notifier).remove(b),
                             ),
                             onTap: () {

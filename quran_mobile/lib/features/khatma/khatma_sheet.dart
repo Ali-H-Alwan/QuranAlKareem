@@ -2,17 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/providers.dart';
 import '../../core/arabic_text.dart';
+import '../../ui/app_colors.dart';
 import 'khatma.dart';
 
-const _green = Color(0xFF0E5A3C);
-const _gold = Color(0xFFC9A24B);
+// ألوان العلامة الثابتة (بطاقة التقدّم الخضراء وأزرارها).
+const _green = AppColors.brandGreen;
+const _gold = AppColors.gold;
 
 /// ورقة خطّة الختمة: بدء/متابعة، تقدّم، ورد اليوم، تذكير.
 void showKhatmaSheet(BuildContext context, WidgetRef ref) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor: const Color(0xFFFBF8F1),
+    backgroundColor: AppColors.card(context),
     shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
     builder: (_) => Directionality(
@@ -29,12 +31,14 @@ void showKhatmaSheet(BuildContext context, WidgetRef ref) {
               controller: scroll,
               padding: const EdgeInsets.all(16),
               children: [
-                const Row(children: [
-                  Icon(Icons.menu_book, color: _gold),
-                  SizedBox(width: 8),
+                Row(children: [
+                  const Icon(Icons.menu_book, color: _gold),
+                  const SizedBox(width: 8),
                   Text('خطّة الختمة',
                       style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 18, color: _green)),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: AppColors.green(context))),
                 ]),
                 const SizedBox(height: 16),
                 if (!k.active)
@@ -67,8 +71,9 @@ class _SetupState extends State<_Setup> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('مدّة الختمة:',
-            style: TextStyle(fontWeight: FontWeight.bold, color: _green)),
+        Text('مدّة الختمة:',
+            style: TextStyle(
+                fontWeight: FontWeight.bold, color: AppColors.green(context))),
         Wrap(
           spacing: 8,
           children: [
@@ -78,7 +83,7 @@ class _SetupState extends State<_Setup> {
                 selected: _days == d,
                 selectedColor: _gold,
                 labelStyle: TextStyle(
-                    color: _days == d ? Colors.white : _green,
+                    color: _days == d ? Colors.white : AppColors.green(context),
                     fontWeight: FontWeight.bold),
                 onSelected: (_) => setState(() => _days = d),
               ),
@@ -86,7 +91,8 @@ class _SetupState extends State<_Setup> {
         ),
         const SizedBox(height: 12),
         Text('الورد اليومي: $daily صفحة تقريباً',
-            style: const TextStyle(color: _green, fontWeight: FontWeight.bold)),
+            style: TextStyle(
+                color: AppColors.green(context), fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
         Row(children: [
           const Text('تذكير يومي الساعة:',
@@ -102,7 +108,9 @@ class _SetupState extends State<_Setup> {
         SizedBox(
           width: double.infinity,
           child: FilledButton.icon(
-            style: FilledButton.styleFrom(backgroundColor: _green),
+            // نص أبيض صريح كي لا يعتم في الوضع الليلي.
+            style: FilledButton.styleFrom(
+                backgroundColor: _green, foregroundColor: Colors.white),
             icon: const Icon(Icons.play_arrow),
             label: const Text('ابدأ الختمة'),
             onPressed: () {
@@ -152,26 +160,34 @@ class _Progress extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         if (k.finished)
-          const Card(
-            color: Color(0xFFE8F5E9),
+          Card(
+            color: AppColors.successCard(context),
             child: Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Text('🎉 مبارك، أتممت الختمة! تقبّل الله.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.bold, color: _green, fontSize: 16)),
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.green(context),
+                      fontSize: 16)),
             ),
           )
         else ...[
-          _row('اليوم', 'اليوم ${k.dayNumber} من ${k.days}'),
-          _row('الورد اليومي', '${k.dailyPages} صفحة'),
-          _row('المتبقّي اليوم', behind ? '${k.remainingToday} صفحة' : 'أنجزت وردك ✅',
-              color: behind ? const Color(0xFF9A4A3A) : _green),
-          _row('ابدأ من', 'صفحة ${k.nextPage}'),
+          _row(context, 'اليوم', 'اليوم ${k.dayNumber} من ${k.days}'),
+          _row(context, 'الورد اليومي', '${k.dailyPages} صفحة'),
+          _row(context, 'المتبقّي اليوم',
+              behind ? '${k.remainingToday} صفحة' : 'أنجزت وردك ✅',
+              color: behind
+                  ? AppColors.danger(context)
+                  : AppColors.green(context)),
+          _row(context, 'ابدأ من', 'صفحة ${k.nextPage}'),
           const SizedBox(height: 12),
           Row(children: [
             Expanded(
               child: FilledButton.icon(
-                style: FilledButton.styleFrom(backgroundColor: _green),
+                // نص أبيض صريح كي لا يعتم في الوضع الليلي.
+                style: FilledButton.styleFrom(
+                    backgroundColor: _green, foregroundColor: Colors.white),
                 icon: const Icon(Icons.menu_book),
                 label: const Text('اقرأ الآن'),
                 onPressed: () {
@@ -185,8 +201,9 @@ class _Progress extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: OutlinedButton.icon(
-                icon: const Icon(Icons.check, color: _green),
-                label: const Text('أنجزت وردي', style: TextStyle(color: _green)),
+                icon: Icon(Icons.check, color: AppColors.green(context)),
+                label: Text('أنجزت وردي',
+                    style: TextStyle(color: AppColors.green(context))),
                 onPressed: () => ctrl.markTodayDone(),
               ),
             ),
@@ -194,21 +211,27 @@ class _Progress extends StatelessWidget {
         ],
         const SizedBox(height: 8),
         TextButton.icon(
-          icon: const Icon(Icons.delete_outline, color: Color(0xFF9A4A3A)),
-          label: const Text('إلغاء الختمة', style: TextStyle(color: Color(0xFF9A4A3A))),
+          icon: Icon(Icons.delete_outline, color: AppColors.danger(context)),
+          label: Text('إلغاء الختمة',
+              style: TextStyle(color: AppColors.danger(context))),
           onPressed: () => ctrl.cancel(),
         ),
       ],
     );
   }
 
-  Widget _row(String label, String value, {Color color = _green}) => Padding(
+  Widget _row(BuildContext context, String label, String value,
+          {Color? color}) =>
+      Padding(
         padding: const EdgeInsets.symmetric(vertical: 5),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(label, style: const TextStyle(color: Colors.grey)),
-            Text(value, style: TextStyle(fontWeight: FontWeight.bold, color: color)),
+            Text(value,
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: color ?? AppColors.green(context))),
           ],
         ),
       );

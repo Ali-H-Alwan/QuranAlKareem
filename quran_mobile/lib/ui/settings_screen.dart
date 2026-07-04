@@ -6,8 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import '../app/prefs.dart';
 import '../data/reciters.dart';
 import '../services/audio_controller.dart';
-
-const _green = Color(0xFF0E5A3C);
+import 'app_colors.dart';
 
 /// شاشة الإعدادات: الخط والحجم والقارئ وإدارة الصوت المحمَّل.
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -65,14 +64,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           title: '🎨 المظهر',
           child: SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            activeThumbColor: _green,
+            activeThumbColor: AppColors.green(context),
             value: prefs.darkMode,
             title: const Text('الوضع الليلي (داكن)',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
             subtitle: const Text('ألوان داكنة مريحة للقراءة ليلاً.',
                 style: TextStyle(fontSize: 11, color: Colors.grey)),
             secondary: Icon(prefs.darkMode ? Icons.dark_mode : Icons.light_mode,
-                color: _green),
+                color: AppColors.green(context)),
             onChanged: (v) => ref.read(prefsProvider.notifier).setDarkMode(v),
           ),
         ),
@@ -86,7 +85,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   value: e.value,
                   // ignore: deprecated_member_use
                   groupValue: prefs.fontFamily,
-                  activeColor: _green,
+                  activeColor: AppColors.green(context),
                   title: Text(e.key, style: const TextStyle(fontSize: 13)),
                   subtitle: Text(
                     'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ',
@@ -104,7 +103,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     child: Slider(
                       value: prefs.fontSize,
                       min: 14, max: 40, divisions: 13,
-                      activeColor: _green,
+                      activeColor: AppColors.green(context),
                       label: prefs.fontSize.round().toString(),
                       onChanged: (v) => ref.read(prefsProvider.notifier).setFontSize(v),
                     ),
@@ -133,7 +132,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 onSelectionChanged: (s) =>
                     ref.read(prefsProvider.notifier).setArabicDigits(s.first),
                 style: SegmentedButton.styleFrom(
-                  selectedBackgroundColor: _green,
+                  // أخضر العلامة الغامق بنص أبيض — مقروء في الوضعين.
+                  selectedBackgroundColor: AppColors.brandGreen,
                   selectedForegroundColor: Colors.white,
                 ),
               ),
@@ -165,7 +165,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 _audioStats == null
                     ? 'جاري حساب الصوت المحمَّل…'
                     : 'الصوت المحمَّل: ${_audioStats!.$1} ملفاً (${_audioStats!.$2.toStringAsFixed(1)} م.ب)',
-                style: const TextStyle(color: _green, fontSize: 12),
+                style: TextStyle(color: AppColors.green(context), fontSize: 12),
               ),
               const SizedBox(height: 6),
               FilledButton.tonal(
@@ -192,7 +192,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             children: [
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                activeThumbColor: _green,
+                activeThumbColor: AppColors.green(context),
                 value: prefs.adhanEnabled,
                 title: const Text('تشغيل الأذان عند وقت الصلاة',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
@@ -208,16 +208,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         // ── حول ──
         _card(
           title: 'ℹ حول البرنامج',
-          child: const Column(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('الباحث القرآني — الإصدار 1.0.0',
-                  style: TextStyle(fontWeight: FontWeight.bold, color: _green)),
-              SizedBox(height: 4),
-              Text('تطوير: شركة الرائد للحلول البرمجية',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.green(context))),
+              const SizedBox(height: 4),
+              const Text('تطوير: شركة الرائد للحلول البرمجية',
                   style: TextStyle(fontSize: 13)),
-              SizedBox(height: 4),
-              Text('النص: مصحف المدينة (رواية حفص) • التفسير: الميسَّر • الإعراب: Quranic Arabic Corpus',
+              const SizedBox(height: 4),
+              const Text('النص: مصحف المدينة (رواية حفص) • التفسير: الميسَّر • الإعراب: Quranic Arabic Corpus',
                   style: TextStyle(fontSize: 11, color: Colors.grey)),
             ],
           ),
@@ -227,11 +229,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _card({required String title, required Widget child}) => Card(
-        color: const Color(0xFFFBF8F1),
+        color: AppColors.card(context),
         margin: const EdgeInsets.only(bottom: 12),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: Color(0xFFE6D9B8)),
+          side: BorderSide(color: AppColors.border(context)),
         ),
         child: Padding(
           padding: const EdgeInsets.all(14),
@@ -239,8 +241,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(title,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 16, color: _green)),
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: AppColors.green(context))),
               const SizedBox(height: 8),
               child,
             ],
