@@ -180,7 +180,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title: const Text('تشغيل الأذان عند وقت الصلاة',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                 subtitle: const Text(
-                    'يُرفع الأذان (الشيعي) عند دخول وقت الصلوات المفعّل تنبيهها.\nعند الإيقاف: تنبيه بنغمة عادية.',
+                    'يُرفع الأذان عند دخول وقت الصلوات المفعّل تنبيهها.\nعند الإيقاف: تنبيه بنغمة عادية.',
                     style: TextStyle(fontSize: 11, color: Colors.grey)),
                 onChanged: (v) => ref.read(prefsProvider.notifier).setAdhanEnabled(v),
               ),

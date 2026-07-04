@@ -50,7 +50,7 @@ class NotificationService {
   /// تغيير ملف الأذان مستقبلاً بزيادة الرقم في المعرّف.)
   static const _adhanDetails = NotificationDetails(
     android: AndroidNotificationDetails(
-      'prayer_adhan_v1',
+      'prayer_adhan_v2',
       'الأذان',
       channelDescription: 'تشغيل الأذان عند دخول وقت الصلاة',
       importance: Importance.max,
