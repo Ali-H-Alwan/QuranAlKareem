@@ -13,6 +13,9 @@ class AppPrefs {
   final bool surahMode;
   final String surahReciterName;
 
+  /// تشغيل الأذان (الشيعي) صوتاً عند دخول وقت الصلوات المفعّل تنبيهها.
+  final bool adhanEnabled;
+
   const AppPrefs({
     this.fontFamily = 'UthmanicHafs',
     this.fontSize = 22,
@@ -20,6 +23,7 @@ class AppPrefs {
     this.arabicDigits = true,
     this.surahMode = false,
     this.surahReciterName = '',
+    this.adhanEnabled = true,
   });
 
   AppPrefs copyWith(
@@ -28,7 +32,8 @@ class AppPrefs {
           String? reciterName,
           bool? arabicDigits,
           bool? surahMode,
-          String? surahReciterName}) =>
+          String? surahReciterName,
+          bool? adhanEnabled}) =>
       AppPrefs(
         fontFamily: fontFamily ?? this.fontFamily,
         fontSize: fontSize ?? this.fontSize,
@@ -36,6 +41,7 @@ class AppPrefs {
         arabicDigits: arabicDigits ?? this.arabicDigits,
         surahMode: surahMode ?? this.surahMode,
         surahReciterName: surahReciterName ?? this.surahReciterName,
+        adhanEnabled: adhanEnabled ?? this.adhanEnabled,
       );
 }
 
@@ -66,7 +72,13 @@ class PrefsNotifier extends Notifier<AppPrefs> {
       arabicDigits: arabic,
       surahMode: _sp!.getBool('surahMode') ?? false,
       surahReciterName: _sp!.getString('surahReciter') ?? '',
+      adhanEnabled: _sp!.getBool('adhanEnabled') ?? true,
     );
+  }
+
+  void setAdhanEnabled(bool v) {
+    state = state.copyWith(adhanEnabled: v);
+    _sp?.setBool('adhanEnabled', v);
   }
 
   void setSurahMode(bool v) {

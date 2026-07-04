@@ -4,6 +4,8 @@ import '../../services/notification_service.dart';
 import 'cities.dart';
 import 'prayer_service.dart';
 
+bool _adhanOn(SharedPreferences? sp) => sp?.getBool('adhanEnabled') ?? true;
+
 class PrayerState {
   final City city;
   final Set<Prayer> notify;
@@ -87,7 +89,7 @@ class PrayerController extends Notifier<PrayerState> {
       final d2 = await _service.getDay(state.city, today.add(const Duration(days: 1)));
       state = state.copyWith(today: d1, tomorrow: d2, loading: false);
       // جدولة يومين مقدماً (تتجدد عند كل فتح للتطبيق).
-      await NotificationService.reschedule([d1, d2], state.notify);
+      await NotificationService.reschedule([d1, d2], state.notify, adhan: _adhanOn(_sp));
     } catch (e) {
       state = state.copyWith(
           loading: false,
@@ -108,7 +110,7 @@ class PrayerController extends Notifier<PrayerState> {
     state = state.copyWith(notify: n);
     // إعادة الجدولة فقط (بلا إعادة جلب المواقيت).
     final d1 = state.today, d2 = state.tomorrow;
-    if (d1 != null && d2 != null) NotificationService.reschedule([d1, d2], n);
+    if (d1 != null && d2 != null) NotificationService.reschedule([d1, d2], n, adhan: _adhanOn(_sp));
   }
 }
 

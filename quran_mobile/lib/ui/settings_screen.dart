@@ -167,6 +167,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         ),
 
+        // ── التنبيهات والأذان ──
+        _card(
+          title: '🕌 الأذان والتنبيه',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                activeThumbColor: _green,
+                value: prefs.adhanEnabled,
+                title: const Text('تشغيل الأذان عند وقت الصلاة',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                subtitle: const Text(
+                    'يُرفع الأذان (الشيعي) عند دخول وقت الصلوات المفعّل تنبيهها.\nعند الإيقاف: تنبيه بنغمة عادية.',
+                    style: TextStyle(fontSize: 11, color: Colors.grey)),
+                onChanged: (v) => ref.read(prefsProvider.notifier).setAdhanEnabled(v),
+              ),
+            ],
+          ),
+        ),
+
         // ── حول ──
         _card(
           title: 'ℹ حول البرنامج',

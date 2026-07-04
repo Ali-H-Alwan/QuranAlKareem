@@ -30,7 +30,7 @@ class PrayerTimesService {
   final _dio = Dio(BaseOptions(connectTimeout: const Duration(seconds: 15)));
 
   String _cacheKey(City c, DateTime d) =>
-      'ptcache:${c.name}:${d.year}-${d.month}-${d.day}';
+      'ptcache:jafari:${c.name}:${d.year}-${d.month}-${d.day}';
 
   /// يجلب مواقيت يوم من Aladhan؛ عند الفشل يرجع آخر نتيجة مخزّنة لنفس اليوم،
   /// وإلا يرمي خطأً واضحاً.
@@ -42,7 +42,9 @@ class PrayerTimesService {
           '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
       final res = await _dio.get(
         'https://api.aladhan.com/v1/timings/$dd',
-        queryParameters: {'latitude': city.lat, 'longitude': city.lng},
+        // method=0: الطريقة الجعفرية (الشيعة الإثنا عشرية، معهد ليفا/قم) —
+        // المغرب بعد الغروب بذهاب الحمرة المشرقية، لا عند الغروب كأهل السنة.
+        queryParameters: {'latitude': city.lat, 'longitude': city.lng, 'method': 0},
       );
       final timings = (res.data['data']['timings'] as Map).cast<String, dynamic>();
       await sp.setString(key, jsonEncode(timings));

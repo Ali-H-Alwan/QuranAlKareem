@@ -32,6 +32,7 @@ class NotificationService {
     _ready = true;
   }
 
+  /// تفاصيل إشعار عادي (نغمة النظام).
   static const _details = NotificationDetails(
     android: AndroidNotificationDetails(
       'prayer_times',
@@ -44,11 +45,31 @@ class NotificationService {
     iOS: DarwinNotificationDetails(presentSound: true),
   );
 
+  /// تفاصيل إشعار بصوت الأذان (الشيعي) — قناة مستقلّة بصوتها الخاص.
+  /// (صوت القناة يُثبَّت عند أول إنشاء؛ نُصدِر إصداراً جديداً للقناة عند
+  /// تغيير ملف الأذان مستقبلاً بزيادة الرقم في المعرّف.)
+  static const _adhanDetails = NotificationDetails(
+    android: AndroidNotificationDetails(
+      'prayer_adhan_v1',
+      'الأذان',
+      channelDescription: 'تشغيل الأذان عند دخول وقت الصلاة',
+      importance: Importance.max,
+      priority: Priority.high,
+      playSound: true,
+      sound: RawResourceAndroidNotificationSound('adhan'),
+      audioAttributesUsage: AudioAttributesUsage.alarm,
+    ),
+    iOS: DarwinNotificationDetails(
+      presentSound: true, sound: 'adhan.caf'),
+  );
+
   /// يعيد جدولة كل التنبيهات: للصلوات المفعَّلة في الأيام المعطاة.
+  /// adhan=true يشغّل الأذان بدل نغمة الإشعار.
   static Future<void> reschedule(
-      List<PrayerDay> days, Set<Prayer> enabled) async {
+      List<PrayerDay> days, Set<Prayer> enabled, {bool adhan = true}) async {
     await init();
     await _plugin.cancelAll();
+    final details = adhan ? _adhanDetails : _details;
     final now = DateTime.now();
     var id = 1;
     for (final day in days) {
@@ -64,7 +85,7 @@ class NotificationService {
             'حان الآن وقت صلاة ${prayerNamesAr[p]}',
             '${day.city.name} — ${_fmt(t)}',
             when,
-            _details,
+            details,
             androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
           );
         } catch (_) {
@@ -74,7 +95,7 @@ class NotificationService {
             'حان الآن وقت صلاة ${prayerNamesAr[p]}',
             '${day.city.name} — ${_fmt(t)}',
             when,
-            _details,
+            details,
             androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
           );
         }
