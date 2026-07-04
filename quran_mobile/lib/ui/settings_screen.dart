@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import '../app/prefs.dart';
@@ -211,10 +212,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('الباحث القرآني — الإصدار 1.0.0',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.green(context))),
+              // رقم الإصدار يُقرأ تلقائياً من التطبيق المثبَّت (لا يُكتب يدوياً).
+              FutureBuilder<PackageInfo>(
+                future: PackageInfo.fromPlatform(),
+                builder: (context, snap) {
+                  final v = snap.hasData
+                      ? '${snap.data!.version} (${snap.data!.buildNumber})'
+                      : '…';
+                  return Text('الباحث القرآني — الإصدار $v',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.green(context)));
+                },
+              ),
               const SizedBox(height: 4),
               const Text('تطوير: شركة الرائد للحلول البرمجية',
                   style: TextStyle(fontSize: 13)),

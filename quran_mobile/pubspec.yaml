@@ -1,7 +1,7 @@
 name: quran_alkareem
 description: "القرآن الكريم — تطبيق الهاتف (شركة الرائد للحلول البرمجية)"
 publish_to: 'none'
-version: 1.0.4+5
+version: 1.0.6+7
 
 environment:
   sdk: ^3.12.1
@@ -22,6 +22,7 @@ dependencies:
   timezone: ^0.10.0
   flutter_timezone: ^4.0.0
   flutter_compass: ^0.8.1
+  package_info_plus: ^8.1.2
 
 dev_dependencies:
   flutter_test:

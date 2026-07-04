@@ -68,7 +68,7 @@ class PrayerTimesService {
       }
     }
     return PrayerDay(city, date, LocalPrayerCalc.compute(city, date),
-        'حساب فلكي بطريقة الكفيل (بلا إنترنت)');
+        'موافق لتوقيت العتبة العباسية (الكفيل)');
   }
 
   /// يحوّل صف الكفيل {fajer, rise, noon, ghrob} إلى مواقيت اليوم.
