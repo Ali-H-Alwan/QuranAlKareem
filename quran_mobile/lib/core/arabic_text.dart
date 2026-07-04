@@ -87,7 +87,15 @@ String forReading(String text) {
   const m = {'ٱ': 'ا', 'ٰ': 'ا', 'ۦ': 'ي', 'ۥ': 'و'};
   final sb = StringBuffer();
   for (final ch in text.split('')) {
-    sb.write(m[ch] ?? ch);
+    if (m.containsKey(ch)) { sb.write(m[ch]); continue; }
+    final c = ch.codeUnitAt(0);
+    // احذف علامات الوقف/التجويد الصغيرة العليا (لا تدعمها الخطوط العادية).
+    if ((c >= 0x0615 && c <= 0x061A) ||
+        (c >= 0x06D6 && c <= 0x06ED) ||
+        (c >= 0x08D3 && c <= 0x08FF)) {
+      continue;
+    }
+    sb.write(ch);
   }
   return sb.toString();
 }

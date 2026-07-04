@@ -68,13 +68,21 @@ public static class ArabicText
         if (string.IsNullOrEmpty(text)) return string.Empty;
         var sb = new StringBuilder(text.Length);
         foreach (var ch in text)
-            sb.Append(ch switch
+        {
+            switch (ch)
             {
-                'ٱ' or 'ٰ' => 'ا',   // ألف الوصل + الألف الخنجرية → ا
-                'ۦ' => 'ي',          // ياء صغيرة معلّقة → ي
-                'ۥ' => 'و',          // واو صغيرة معلّقة → و
-                _ => ch,
-            });
+                case 'ٱ' or 'ٰ': sb.Append('ا'); continue;  // ألف الوصل/الخنجرية → ا
+                case 'ۦ': sb.Append('ي'); continue;         // ياء صغيرة معلّقة → ي
+                case 'ۥ': sb.Append('و'); continue;         // واو صغيرة معلّقة → و
+            }
+            // احذف علامات الوقف/التجويد الصغيرة العليا (صلى، قلى، ميم صغيرة…):
+            // الخطوط العادية لا تدعمها فتظهر دوائر. الحركات الأساسية تبقى.
+            if (ch is >= 'ؕ' and <= 'ؚ'
+                    or >= 'ۖ' and <= 'ۭ'
+                    or >= '࣓' and <= 'ࣿ')
+                continue;
+            sb.Append(ch);
+        }
         return sb.ToString();
     }
 
