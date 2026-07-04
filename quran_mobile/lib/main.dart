@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'app/providers.dart';
+import 'features/islamic/islamic_screen.dart';
 import 'features/prayer/prayer_screen.dart';
 import 'services/notification_service.dart';
 import 'ui/mushaf_screen.dart';
@@ -86,6 +87,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           SearchScreen(onOpenPage: _openPage),
           const MushafScreen(),
           const PrayerScreen(),
+          const IslamicScreen(),
           const SettingsScreen(),
         ],
       ),
@@ -97,6 +99,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           NavigationDestination(icon: Icon(Icons.search), label: 'البحث'),
           NavigationDestination(icon: Icon(Icons.menu_book), label: 'المصحف'),
           NavigationDestination(icon: Icon(Icons.access_time_filled), label: 'المواقيت'),
+          NavigationDestination(icon: Icon(Icons.mosque), label: 'إسلامي'),
           NavigationDestination(icon: Icon(Icons.settings), label: 'الإعدادات'),
         ],
       ),
