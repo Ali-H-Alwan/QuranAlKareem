@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/arabic_text.dart';
+import '../qibla/qibla_screen.dart';
 import 'cities.dart';
 import 'prayer_controller.dart';
 import 'prayer_service.dart';
@@ -86,6 +87,12 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> {
                         ],
                         onChanged: (v) { if (v != null) ctrl.setCity(City.byName(v)); },
                       ),
+                    ),
+                    IconButton(
+                      tooltip: 'اتجاه القبلة',
+                      icon: const Icon(Icons.explore, color: _gold),
+                      onPressed: () => Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => const QiblaScreen())),
                     ),
                   ],
                 ),

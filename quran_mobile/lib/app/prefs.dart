@@ -13,8 +13,11 @@ class AppPrefs {
   final bool surahMode;
   final String surahReciterName;
 
-  /// تشغيل الأذان (الشيعي) صوتاً عند دخول وقت الصلوات المفعّل تنبيهها.
+  /// تشغيل الأذان صوتاً عند دخول وقت الصلوات المفعّل تنبيهها.
   final bool adhanEnabled;
+
+  /// الوضع الليلي (داكن).
+  final bool darkMode;
 
   const AppPrefs({
     this.fontFamily = 'UthmanicHafs',
@@ -24,6 +27,7 @@ class AppPrefs {
     this.surahMode = false,
     this.surahReciterName = '',
     this.adhanEnabled = true,
+    this.darkMode = false,
   });
 
   AppPrefs copyWith(
@@ -33,7 +37,8 @@ class AppPrefs {
           bool? arabicDigits,
           bool? surahMode,
           String? surahReciterName,
-          bool? adhanEnabled}) =>
+          bool? adhanEnabled,
+          bool? darkMode}) =>
       AppPrefs(
         fontFamily: fontFamily ?? this.fontFamily,
         fontSize: fontSize ?? this.fontSize,
@@ -42,6 +47,7 @@ class AppPrefs {
         surahMode: surahMode ?? this.surahMode,
         surahReciterName: surahReciterName ?? this.surahReciterName,
         adhanEnabled: adhanEnabled ?? this.adhanEnabled,
+        darkMode: darkMode ?? this.darkMode,
       );
 }
 
@@ -73,6 +79,7 @@ class PrefsNotifier extends Notifier<AppPrefs> {
       surahMode: _sp!.getBool('surahMode') ?? false,
       surahReciterName: _sp!.getString('surahReciter') ?? '',
       adhanEnabled: _sp!.getBool('adhanEnabled') ?? true,
+      darkMode: _sp!.getBool('darkMode') ?? false,
     );
   }
 
@@ -80,6 +87,15 @@ class PrefsNotifier extends Notifier<AppPrefs> {
     state = state.copyWith(adhanEnabled: v);
     _sp?.setBool('adhanEnabled', v);
   }
+
+  void setDarkMode(bool v) {
+    state = state.copyWith(darkMode: v);
+    _sp?.setBool('darkMode', v);
+  }
+
+  /// حفظ آخر صفحة مصحف مفتوحة (للرجوع إليها عند الإقلاع).
+  void saveLastPage(int page) => _sp?.setInt('lastPage', page);
+  int get lastPage => _sp?.getInt('lastPage') ?? 1;
 
   void setSurahMode(bool v) {
     state = state.copyWith(surahMode: v);

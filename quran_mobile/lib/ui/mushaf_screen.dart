@@ -9,6 +9,8 @@ import '../core/arabic_text.dart';
 import '../data/models.dart';
 import '../data/reciters.dart';
 import '../data/surah_reciters.dart';
+import '../features/bookmarks/bookmarks_sheet.dart';
+import '../features/khatma/khatma_sheet.dart';
 import '../services/audio_controller.dart';
 import 'ayah_sheet.dart';
 
@@ -64,6 +66,18 @@ class _MushafScreenState extends ConsumerState<MushafScreen> {
                 onPressed: () => ref
                     .read(prefsProvider.notifier)
                     .setFontSize((prefs.fontSize + 2).clamp(14, 40)),
+              ),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                tooltip: 'المفضّلة',
+                icon: const Icon(Icons.bookmarks, color: _gold, size: 20),
+                onPressed: () => showBookmarksSheet(context, ref),
+              ),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                tooltip: 'خطّة الختمة',
+                icon: const Icon(Icons.event_note, color: _gold, size: 20),
+                onPressed: () => showKhatmaSheet(context, ref),
               ),
               const Spacer(),
               // اسم السورة + رقم الصفحة (في الشريط لا داخل الصفحة)
@@ -198,7 +212,10 @@ class _MushafScreenState extends ConsumerState<MushafScreen> {
           child: PageView.builder(
             controller: _controller,
             itemCount: 604,
-            onPageChanged: (i) => ref.read(currentPageProvider.notifier).state = i + 1,
+            onPageChanged: (i) {
+              ref.read(currentPageProvider.notifier).state = i + 1;
+              ref.read(prefsProvider.notifier).saveLastPage(i + 1); // للرجوع عند الإقلاع
+            },
             itemBuilder: (_, i) => _MushafPage(page: i + 1),
           ),
         ),

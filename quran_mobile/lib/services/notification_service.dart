@@ -104,4 +104,44 @@ class NotificationService {
   }
 
   static String _fmt(DateTime t) => '${toArabicDigits(t.hour)}:${padDigits(t.minute, 2)}';
+
+  // ═══ تذكير الختمة اليومي ═══
+  static const int _khatmaId = 900000;
+
+  static const _khatmaDetails = NotificationDetails(
+    android: AndroidNotificationDetails(
+      'khatma_reminder',
+      'تذكير الختمة',
+      channelDescription: 'تذكير يومي بورد الختمة',
+      importance: Importance.high,
+      priority: Priority.high,
+      playSound: true,
+    ),
+    iOS: DarwinNotificationDetails(presentSound: true),
+  );
+
+  /// يجدول تذكيراً يومياً متكرّراً بالساعة المحدّدة بورد الختمة.
+  static Future<void> scheduleDailyKhatma(int hour, int dailyPages) async {
+    await init();
+    await _plugin.cancel(_khatmaId);
+    final now = tz.TZDateTime.now(tz.local);
+    var when = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour);
+    if (!when.isAfter(now)) when = when.add(const Duration(days: 1));
+    try {
+      await _plugin.zonedSchedule(
+        _khatmaId,
+        'وردك اليومي من الختمة',
+        'اقرأ $dailyPages صفحة اليوم لإكمال ختمتك في وقتها.',
+        when,
+        _khatmaDetails,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.time, // يومياً
+      );
+    } catch (_) {/* تجاهل إن رُفض */}
+  }
+
+  static Future<void> cancelKhatma() async {
+    await init();
+    await _plugin.cancel(_khatmaId);
+  }
 }

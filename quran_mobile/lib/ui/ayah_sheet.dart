@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../app/providers.dart';
 import '../core/arabic_text.dart';
 import '../data/models.dart';
+import '../features/bookmarks/bookmarks.dart';
 
 const _green = Color(0xFF0E5A3C);
 const _gold = Color(0xFFC9A24B);
@@ -35,6 +36,28 @@ Future<void> showAyahSheet(BuildContext context, WidgetRef ref, Ayah ayah) {
                     style: const TextStyle(fontWeight: FontWeight.bold, color: _green),
                   ),
                 ),
+                // زر المفضّلة (يتحدّث فورياً)
+                Consumer(builder: (context, ref, _) {
+                  final saved = ref.watch(bookmarksProvider
+                      .select((l) => l.any((b) => b.surah == ayah.surahNumber && b.ayah == ayah.numberInSurah)));
+                  return IconButton(
+                    tooltip: saved ? 'إزالة من المفضّلة' : 'حفظ في المفضّلة',
+                    icon: Icon(saved ? Icons.bookmark : Icons.bookmark_border,
+                        color: _gold, size: 22),
+                    onPressed: () {
+                      final now = ref.read(bookmarksProvider.notifier).toggle(Bookmark(
+                            surah: ayah.surahNumber,
+                            ayah: ayah.numberInSurah,
+                            page: ayah.page,
+                            surahName: ayah.surahName,
+                            snippet: normalizeLight(ayah.text),
+                          ));
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          duration: const Duration(seconds: 1),
+                          content: Text(now ? 'حُفظت في المفضّلة' : 'أُزيلت من المفضّلة')));
+                    },
+                  );
+                }),
                 IconButton(
                   tooltip: 'نسخ الآية',
                   icon: const Icon(Icons.copy, color: _gold, size: 20),

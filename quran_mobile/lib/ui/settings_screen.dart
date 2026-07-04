@@ -60,6 +60,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       padding: const EdgeInsets.all(14),
       children: [
         // ── الخط ──
+        // ── المظهر ──
+        _card(
+          title: '🎨 المظهر',
+          child: SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            activeThumbColor: _green,
+            value: prefs.darkMode,
+            title: const Text('الوضع الليلي (داكن)',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            subtitle: const Text('ألوان داكنة مريحة للقراءة ليلاً.',
+                style: TextStyle(fontSize: 11, color: Colors.grey)),
+            secondary: Icon(prefs.darkMode ? Icons.dark_mode : Icons.light_mode,
+                color: _green),
+            onChanged: (v) => ref.read(prefsProvider.notifier).setDarkMode(v),
+          ),
+        ),
+
         _card(
           title: '🖋 خط المصحف',
           child: Column(

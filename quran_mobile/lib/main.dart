@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'app/prefs.dart';
 import 'app/providers.dart';
 import 'features/islamic/islamic_screen.dart';
 import 'features/prayer/prayer_screen.dart';
@@ -24,17 +26,30 @@ Future<void> main() async {
 const _green = Color(0xFF0E5A3C);
 const _gold = Color(0xFFC9A24B);
 
-class QuranApp extends StatelessWidget {
+class QuranApp extends ConsumerWidget {
   const QuranApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dark = ref.watch(prefsProvider).darkMode;
     return MaterialApp(
       title: 'الباحث القرآني',
       debugShowCheckedModeBanner: false,
+      themeMode: dark ? ThemeMode.dark : ThemeMode.light,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: _green, primary: _green, secondary: _gold),
         scaffoldBackgroundColor: const Color(0xFFEFE7D2),
+        useMaterial3: true,
+        fontFamily: 'ScheherazadeNew',
+      ),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: _green,
+          brightness: Brightness.dark,
+          primary: const Color(0xFF6FBF97),
+          secondary: _gold,
+        ),
+        scaffoldBackgroundColor: const Color(0xFF121712),
         useMaterial3: true,
         fontFamily: 'ScheherazadeNew',
       ),
@@ -55,6 +70,18 @@ class HomeShell extends ConsumerStatefulWidget {
 
 class _HomeShellState extends ConsumerState<HomeShell> {
   int _tab = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // افتح على آخر صفحة مصحف كان يقرؤها المستخدم (من التخزين مباشرةً).
+    SharedPreferences.getInstance().then((sp) {
+      final last = sp.getInt('lastPage') ?? 1;
+      if (last != 1 && mounted) {
+        ref.read(currentPageProvider.notifier).state = last;
+      }
+    });
+  }
 
   void _openPage(int page, int surah, int ayah) {
     ref.read(targetAyahProvider.notifier).state = (surah, ayah);
